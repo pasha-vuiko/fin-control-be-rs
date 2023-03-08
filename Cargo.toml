@@ -21,7 +21,7 @@ serde = { version = "1.0.152", features = ["derive"] }
 
 # Config
 dotenv = "0.15.0"
-clap = { version = "3.2.23", features = ["derive", "env"] }
+envy = "0.4"
 
 # Database ORM
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = ["migrations", "postgresql"] }
