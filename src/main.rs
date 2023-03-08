@@ -1,12 +1,11 @@
 use axum::Router;
-use clap::Parser;
 use dotenv::dotenv;
 use std::{env, net::SocketAddr, sync::Arc};
 use tower_request_id::RequestIdLayer;
 
 mod api;
 use crate::api::get_root_api_router;
-use crate::shared::config::Config;
+use crate::shared::config::AppConfig;
 
 mod shared;
 use crate::shared::config::tracing::{get_tracing_layer, init_tracing};
@@ -22,7 +21,7 @@ async fn main() {
     init_tracing();
 
     //config
-    let config = Config::parse();
+    let config = envy::from_env::<AppConfig>().expect("failed to parse app config");
 
     // Prisma client
     let prisma_client = Arc::new(
@@ -31,11 +30,11 @@ async fn main() {
             .expect("Failed to generate prisma client"),
     );
     // Redis Connection manager
-    let redis_service = Arc::new(get_redis_service().await);
+    let redis_service = Arc::new(get_redis_service(&config).await);
 
     // building of an application
     let app = Router::new()
-        .merge(get_root_api_router(prisma_client, redis_service))
+        .merge(get_root_api_router(prisma_client, redis_service, &config))
         .fallback(handle_404_resource)
         .layer(get_tracing_layer())
         .layer(RequestIdLayer);
