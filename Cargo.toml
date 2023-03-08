@@ -1,0 +1,39 @@
+[package]
+name = "fin-control-be-rs"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+[workspace]
+members = [
+    "prisma-cli",
+]
+resolver = "2"
+
+
+[dependencies]
+axum = "0.6.10"
+tokio = { version = "1.0", features = ["full"] }
+
+# Serialization/Deserialization
+serde_json = "1.0.93"
+serde = { version = "1.0.152", features = ["derive"] }
+
+# Config
+dotenv = "0.15.0"
+clap = { version = "3.2.23", features = ["derive", "env"] }
+
+# Database ORM
+prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = ["migrations", "postgresql"] }
+
+# Redis
+redis = { version = "0.22.3", features = ["tokio-comp", "connection-manager"] }
+
+# Logger
+tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
+tracing = "0.1"
+tower-http = { version = "0.4.0", features = ["trace"] }
+tower-request-id = "0.2.1"
+
+# Error handling
+derive_more = "0.99.17"

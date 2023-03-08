@@ -1,0 +1,25 @@
+generator client {
+  provider = "cargo prisma"
+  output   = "../src/shared/prisma/mod.rs"
+}
+
+datasource db {
+  provider = "cockroachdb"
+  url      = env("DATABASE_URL")
+}
+
+model Customer {
+  id        String   @id @default(uuid())
+  auth0Id   String   @unique
+  firstName String
+  lastName  String
+  email     String   @unique
+  phone     String?  @unique
+  birthdate DateTime
+  sex       Sex
+}
+
+enum Sex {
+  MALE
+  FEMALE
+}
