@@ -2,7 +2,7 @@ use serde::Deserialize;
 
 pub mod tracing;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct AppConfig {
     // App
     pub port: u16,
@@ -12,7 +12,7 @@ pub struct AppConfig {
     pub redis_config_name: String,
     pub redis_config_host: String,
     pub redis_config_port: u16,
-    pub redis_ttl: u16, // seconds
+    pub redis_ttl: usize, // seconds
 
     // Auth0
     pub auth_auth0_domain: String,

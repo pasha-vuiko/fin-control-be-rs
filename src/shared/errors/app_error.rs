@@ -1,7 +1,10 @@
-use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
-use axum::Json;
+use axum::{
+    http::StatusCode,
+    response::{IntoResponse, Response},
+    Json,
+};
 use derive_more::{Display, Error};
+use prisma_client_rust::QueryError;
 use redis::RedisError;
 use serde::Serialize;
 use serde_json::json;
@@ -59,6 +62,14 @@ impl From<RedisError> for AppError {
     fn from(source: RedisError) -> Self {
         Self::Internal {
             message: source.to_string(),
+        }
+    }
+}
+
+impl From<QueryError> for AppError {
+    fn from(value: QueryError) -> Self {
+        Self::Internal {
+            message: format!("Prima QueryError: {}", value.to_string()),
         }
     }
 }

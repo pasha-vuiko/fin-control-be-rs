@@ -10,6 +10,8 @@ members = [
 ]
 resolver = "2"
 
+[registries.crates-io]
+protocol = "sparse"
 
 [dependencies]
 axum = "0.6.10"
@@ -22,6 +24,9 @@ serde = { version = "1.0.152", features = ["derive"] }
 # Config
 dotenv = "0.15.0"
 envy = "0.4"
+
+# Validation
+validator = { version = "0.16.0", features = ["derive", "phone"] }
 
 # Database ORM
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = ["migrations", "postgresql"] }
@@ -37,3 +42,7 @@ tower-request-id = "0.2.1"
 
 # Error handling
 derive_more = "0.99.17"
+
+# Util crates
+chrono = "0.4.23" # Working with dates
+async-trait = "0.1.66"
