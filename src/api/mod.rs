@@ -11,9 +11,11 @@ mod customers;
 pub fn get_root_api_router(
     prisma_client: Arc<PrismaClient>,
     redis_service: Arc<RedisService>,
-    config: &AppConfig,
+    config: AppConfig,
 ) -> Router {
-    Router::new().route("/", get(index))
+    Router::new()
+        .route("/", get(index))
+        .merge(customers::get_router(prisma_client, redis_service, config))
 }
 
 async fn index() -> String {

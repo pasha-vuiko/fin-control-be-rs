@@ -19,7 +19,6 @@ async fn main() {
     dotenv().ok();
     // init logging
     init_tracing();
-
     //config
     let config = envy::from_env::<AppConfig>().expect("failed to parse app config");
 
@@ -34,7 +33,11 @@ async fn main() {
 
     // building of an application
     let app = Router::new()
-        .merge(get_root_api_router(prisma_client, redis_service, &config))
+        .merge(get_root_api_router(
+            prisma_client,
+            redis_service,
+            config.clone(),
+        ))
         .fallback(handle_404_resource)
         .layer(get_tracing_layer())
         .layer(RequestIdLayer);
