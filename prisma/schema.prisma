@@ -9,17 +9,40 @@ datasource db {
 }
 
 model Customer {
-  id        String   @id @default(uuid())
-  auth0Id   String   @unique
+  id        String    @id @default(uuid())
+  userId    String    @unique
   firstName String
   lastName  String
-  email     String   @unique
-  phone     String?  @unique
+  email     String    @unique
+  phone     String?   @unique
   birthdate DateTime
   sex       Sex
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @default(now())
+  Expense   Expense[]
+}
+
+model Expense {
+  id         String      @id
+  customerId String
+  amount     Decimal     @db.Decimal(10, 2)
+  date       DateTime
+  type       ExpenseType
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @default(now())
+  Customer   Customer    @relation(fields: [customerId], references: [id])
 }
 
 enum Sex {
   MALE
   FEMALE
+}
+
+enum ExpenseType {
+  FOOD
+  CLOTHES
+  HOBBIES
+  GAMES
+  SUBSCRIPTIONS
+  OTHER
 }

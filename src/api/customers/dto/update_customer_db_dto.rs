@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateCustomerDbDto {
-    pub auth_0_id: Option<String>,
+    pub user_id: Option<String>,
     pub first_name: Option<String>,
     pub last_name: Option<String>,
     pub email: Option<String>,
