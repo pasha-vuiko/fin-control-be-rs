@@ -24,7 +24,7 @@ impl CustomerRepository {
     fn map_customer_from_db(customer_from_prisma: customer::Data) -> CustomerFromDb {
         CustomerFromDb {
             id: customer_from_prisma.id,
-            auth_0_id: customer_from_prisma.auth_0_id,
+            auth_0_id: customer_from_prisma.user_id,
             first_name: customer_from_prisma.first_name,
             last_name: customer_from_prisma.last_name,
             email: customer_from_prisma.email,
@@ -53,8 +53,8 @@ impl CustomerRepository {
     ) -> Vec<customer::SetParam> {
         let mut update_values: Vec<customer::SetParam> = vec![];
 
-        if let Some(auth_0_id) = update_dto.auth_0_id {
-            update_values.push(customer::auth_0_id::set(auth_0_id));
+        if let Some(auth_0_id) = update_dto.user_id {
+            update_values.push(customer::user_id::set(auth_0_id));
         }
         if let Some(first_name) = update_dto.first_name {
             update_values.push(customer::first_name::set(first_name));
@@ -151,7 +151,7 @@ impl CustomersRepositoryTrait for CustomerRepository {
         let updated_customer_from_prisma = self
             .prisma_client
             .customer()
-            .update(prisma::customer::id::equals(id.to_string()), update_values)
+            .update(customer::id::equals(id.to_string()), update_values)
             .exec()
             .await?;
 

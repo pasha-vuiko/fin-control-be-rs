@@ -50,11 +50,11 @@ impl CustomersService {
 
     fn map_update_dto_to_update_db_dto(
         update_dto: UpdateCustomerDto,
-        auth_0_id: String,
+        user_id: String,
         email: String,
     ) -> UpdateCustomerDbDto {
         UpdateCustomerDbDto {
-            auth_0_id: Some(auth_0_id),
+            user_id: Some(user_id),
             email: Some(email),
             first_name: update_dto.first_name,
             last_name: update_dto.last_name,
