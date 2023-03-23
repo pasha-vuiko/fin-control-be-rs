@@ -19,28 +19,28 @@ pub enum AppError {
     #[display(fmt = message)]
     Forbidden { message: String },
     #[display(fmt = message)]
-    Internal { message: String },
+    Unauthorized { message: String },
     #[display(fmt = message)]
-    Unknown { message: String },
+    Internal { message: String },
 }
 impl AppError {
     pub fn get_name(&self) -> String {
         match self {
             Self::NotFound { message: _ } => "Not Found".to_string(),
             Self::BadRequest { message: _ } => "Bad Request".to_string(),
+            Self::Unauthorized { message: _ } => "Unauthorized".to_string(),
             Self::Forbidden { message: _ } => "Forbidden".to_string(),
             Self::Internal { message: _ } => "Internal Server Error".to_string(),
-            Self::Unknown { message: _ } => "Unknown".to_string(),
         }
     }
 
-    fn get_status_code(&self) -> StatusCode {
+    pub fn get_status_code(&self) -> StatusCode {
         match *self {
             Self::NotFound { message: _ } => StatusCode::NOT_FOUND,
             Self::BadRequest { message: _ } => StatusCode::BAD_REQUEST,
+            Self::Unauthorized { message: _ } => StatusCode::UNAUTHORIZED,
             Self::Forbidden { message: _ } => StatusCode::FORBIDDEN,
             Self::Internal { message: _ } => StatusCode::INTERNAL_SERVER_ERROR,
-            Self::Unknown { message: _ } => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
@@ -53,9 +53,7 @@ impl IntoResponse for AppError {
             message: self.to_string(),
         };
 
-        let body = Json(json!(error_response));
-
-        (status, body).into_response()
+        error_response.into_response()
     }
 }
 impl From<RedisError> for AppError {
@@ -69,16 +67,50 @@ impl From<RedisError> for AppError {
 impl From<QueryError> for AppError {
     fn from(value: QueryError) -> Self {
         Self::Internal {
-            message: format!("Prima QueryError: {}", value.to_string()),
+            message: format!("Prisma QueryError: {}", value.to_string()),
+        }
+    }
+}
+
+impl From<serde_json::Error> for AppError {
+    fn from(value: serde_json::Error) -> Self {
+        Self::Internal {
+            message: format!("Serde JSON Error: {}", value.to_string()),
+        }
+    }
+}
+
+impl From<alcoholic_jwt::ValidationError> for AppError {
+    fn from(value: alcoholic_jwt::ValidationError) -> Self {
+        Self::Unauthorized {
+            message: format!("JWT Validation Error: {}", value.to_string()),
+        }
+    }
+}
+
+impl From<Box<dyn std::error::Error>> for AppError {
+    fn from(value: Box<dyn std::error::Error>) -> Self {
+        Self::Internal {
+            message: format!("Error: {}", value),
         }
     }
 }
 
 #[derive(Serialize, Debug)]
 pub struct CustomErrorResponse {
-    code: u16,
-    error: String,
-    message: String,
+    pub code: u16,
+    pub error: String,
+    pub message: String,
+}
+
+impl IntoResponse for CustomErrorResponse {
+    fn into_response(self) -> Response {
+        let body = Json(json!(self));
+        let status_code =
+            StatusCode::from_u16(self.code).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
+
+        (status_code, body).into_response()
+    }
 }
 
 impl Display for CustomErrorResponse {
