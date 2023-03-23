@@ -22,6 +22,7 @@ impl RedisService {
         let cached_value = redis_connection_manager.get(key).await?;
 
         match cached_value {
+            // TODO Fix possible memory leak
             Value::Data(value) => match serde_json::from_slice::<T>(value.leak()) {
                 Ok(deserialized_value) => Ok(deserialized_value),
                 Err(err) => Err(AppError::Internal {
