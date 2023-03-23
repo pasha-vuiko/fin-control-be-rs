@@ -26,11 +26,11 @@ pub enum AppError {
 impl AppError {
     pub fn get_name(&self) -> String {
         match self {
-            Self::NotFound { message: _ } => "Not Found".to_string(),
-            Self::BadRequest { message: _ } => "Bad Request".to_string(),
-            Self::Unauthorized { message: _ } => "Unauthorized".to_string(),
-            Self::Forbidden { message: _ } => "Forbidden".to_string(),
-            Self::Internal { message: _ } => "Internal Server Error".to_string(),
+            Self::NotFound { message: _ } => "Not Found".into(),
+            Self::BadRequest { message: _ } => "Bad Request".into(),
+            Self::Unauthorized { message: _ } => "Unauthorized".into(),
+            Self::Forbidden { message: _ } => "Forbidden".into(),
+            Self::Internal { message: _ } => "Internal Server Error".into(),
         }
     }
 
