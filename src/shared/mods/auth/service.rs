@@ -53,7 +53,7 @@ impl AuthService {
         match Self::check_roles_match(&required_roles, &claims.roles) {
             true => Ok(claims),
             false => Err(AppError::Forbidden {
-                message: "User is not authorized to access this resource".to_string(),
+                message: "User is not authorized to access this resource".into(),
             }),
         }
     }
@@ -83,7 +83,7 @@ impl AuthService {
                     tracing::debug!("{}", message);
 
                     Err(AppError::Unauthorized {
-                        message: message.to_string(),
+                        message: message.into(),
                     })
                 }
             },
@@ -92,7 +92,7 @@ impl AuthService {
                 tracing::debug!("{}", message);
 
                 Err(AppError::Unauthorized {
-                    message: message.to_string(),
+                    message: message.into(),
                 })
             }
         }
