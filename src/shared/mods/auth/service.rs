@@ -1,8 +1,7 @@
 use alcoholic_jwt::{token_kid, validate, Validation, JWKS};
 
 use crate::shared::errors::app_error::AppError;
-use crate::shared::mods::auth::claims::UserJwtClaims;
-use crate::shared::mods::auth::roles::Roles;
+use crate::shared::mods::auth::{claims::UserJwtClaims, roles::Roles};
 
 #[derive(Clone)]
 pub struct AuthService {
@@ -15,6 +14,8 @@ impl AuthService {
         let issuer = format!("https://{}/", jwks_domain);
         let jwks_url = format!("{}{}", issuer, ".well-known/jwks.json");
         let jwks = Self::fetch_jwks(&jwks_url).await?;
+
+        tracing::debug!("JWKS was successfully fetched");
 
         Ok(Self { jwks, issuer })
     }
@@ -29,6 +30,12 @@ impl AuthService {
     fn check_roles_match(required_roles: &[Roles], user_roles: &[Roles]) -> bool {
         for required_role in required_roles {
             if !user_roles.contains(required_role) {
+                tracing::debug!(
+                    "User does not have required role: {:?}, user roles: {:?}",
+                    required_role,
+                    user_roles
+                );
+
                 return false;
             }
         }
@@ -41,6 +48,7 @@ impl AuthService {
         required_roles: Vec<Roles>,
     ) -> Result<UserJwtClaims, AppError> {
         let claims = self.validate_token(token).await?;
+        tracing::debug!("Token is validated successfully");
 
         match Self::check_roles_match(&required_roles, &claims.roles) {
             true => Ok(claims),
@@ -70,13 +78,23 @@ impl AuthService {
 
                     Ok(claims)
                 }
-                None => Err(AppError::Unauthorized {
-                    message: "Token is not valid, Specified key not found in JWKS set".to_string(),
-                }),
+                None => {
+                    let message = "Token is not valid, Specified key not found in JWKS set";
+                    tracing::debug!("{}", message);
+
+                    Err(AppError::Unauthorized {
+                        message: message.to_string(),
+                    })
+                }
             },
-            None => Err(AppError::Unauthorized {
-                message: "Token is not valid, Key ID is not found in the token".to_string(),
-            }),
+            None => {
+                let message = "Token is not valid, Key ID is not found in the token";
+                tracing::debug!("{}", message);
+
+                Err(AppError::Unauthorized {
+                    message: message.to_string(),
+                })
+            }
         }
     }
 }
