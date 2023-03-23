@@ -28,8 +28,15 @@ envy = "0.4"
 # Validation
 validator = { version = "0.16.0", features = ["derive", "phone"] }
 
+# Authentication
+axum-auth = "0.4.0"
+alcoholic_jwt = "4091.0.0"
+
 # Database ORM
-prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.4", default-features = false, features = ["migrations", "postgresql"] }
+prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.6", default-features = false, features = ["migrations", "postgresql"] }
+
+# Requests
+reqwest = { version = "0.11.15", features = ["json"] }
 
 # Redis
 redis = { version = "0.22.3", features = ["tokio-comp", "connection-manager"] }

@@ -4,12 +4,13 @@ use std::{env, net::SocketAddr, sync::Arc};
 use tower_request_id::RequestIdLayer;
 
 mod api;
-use crate::api::get_root_api_router;
+use crate::api::get_api_router;
 use crate::shared::config::AppConfig;
 
 mod shared;
 use crate::shared::config::tracing::{get_tracing_layer, init_tracing};
 use crate::shared::handlers::handle_404_resource;
+use crate::shared::mods::auth::service::AuthService;
 use crate::shared::mods::prisma;
 use crate::shared::mods::redis::get_redis_service;
 
@@ -30,14 +31,18 @@ async fn main() {
     );
     // Redis Connection manager
     let redis_service = Arc::new(get_redis_service(&config).await);
+    // Authentication
+    let auth_service = AuthService::from_auth_domain(&config.auth_auth0_domain)
+        .await
+        .expect("Failed to generate auth service");
+
+    // TODO Add pagination for APIs
+    let api_router =
+        get_api_router(prisma_client, redis_service, config.clone(), auth_service).await;
 
     // building of an application
     let app = Router::new()
-        .merge(get_root_api_router(
-            prisma_client,
-            redis_service,
-            config.clone(),
-        ))
+        .merge(api_router)
         .fallback(handle_404_resource)
         .layer(get_tracing_layer())
         .layer(RequestIdLayer);
