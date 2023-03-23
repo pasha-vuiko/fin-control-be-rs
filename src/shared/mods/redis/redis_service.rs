@@ -30,7 +30,7 @@ impl RedisService {
                 }),
             },
             Value::Nil => Err(AppError::Internal {
-                message: "Value is not found".to_string(),
+                message: "Value is not found".into(),
             }),
             _ => Err(AppError::Internal {
                 message: format!("Some error happen on fetching key '{}'", key),

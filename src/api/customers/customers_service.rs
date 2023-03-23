@@ -2,7 +2,7 @@ use crate::api::customers::dto::create_customer_db_dto::CreateCustomerDbDto;
 use crate::api::customers::dto::update_customer_db_dto::UpdateCustomerDbDto;
 use crate::api::customers::{
     dto::create_customer_dto::CreateCustomerDto, dto::update_customer_dto::UpdateCustomerDto,
-    entities::customer_entity::CustomerEntity, structs::customer_from_db::CustomerFromDb,
+    entities::customer_entity::CustomerEntity,
     traits::customers_repository::CustomersRepositoryTrait,
 };
 use crate::shared::errors::app_error::AppError;
@@ -19,27 +19,126 @@ impl CustomersService {
         }
     }
 
-    fn map_customer_from_db_to_customer_entity(customer_from_db: CustomerFromDb) -> CustomerEntity {
-        CustomerEntity {
-            id: customer_from_db.id,
-            auth_0_id: "mockAuth0Id".to_string(),
-            first_name: customer_from_db.first_name,
-            last_name: customer_from_db.last_name,
-            email: customer_from_db.email,
-            birthdate: customer_from_db.birthdate,
-            phone: customer_from_db.phone,
-            sex: customer_from_db.sex,
+    pub async fn find_one_as_admin(&self, id: &str) -> Result<CustomerEntity, AppError> {
+        let customer_from_db = self.customers_repository.find_one(id).await?;
+        let customer_entity = customer_from_db.into();
+
+        Ok(customer_entity)
+    }
+
+    pub async fn find_one_as_customer(
+        &self,
+        id: &str,
+        user_id: &str,
+    ) -> Result<CustomerEntity, AppError> {
+        let customer_from_db = self.customers_repository.find_one(id).await?;
+
+        if customer_from_db.user_id != user_id {
+            return Err(AppError::NotFound {
+                message: "'The customer was not found'".into(),
+            });
         }
+
+        let customer_entity = customer_from_db.into();
+
+        Ok(customer_entity)
+    }
+
+    pub async fn find_many(&self) -> Result<Vec<CustomerEntity>, AppError> {
+        let customers_from_db = self.customers_repository.find_many().await?;
+
+        let customer_entities = customers_from_db
+            .into_iter()
+            .map(|customer_from_db| customer_from_db.into())
+            .collect();
+
+        Ok(customer_entities)
+    }
+
+    pub async fn create(
+        &self,
+        create_dto: CreateCustomerDto,
+        user_id: &str,
+        email: &str,
+    ) -> Result<CustomerEntity, AppError> {
+        let create_customer_db_dto =
+            CustomersService::map_create_dto_to_create_db_dto(create_dto, user_id, email);
+        let created_customer_from_db = self
+            .customers_repository
+            .create(create_customer_db_dto)
+            .await?;
+
+        let created_customer_entity = created_customer_from_db.into();
+
+        Ok(created_customer_entity)
+    }
+
+    pub async fn update_as_customer(
+        &self,
+        id: &str,
+        update_dto: UpdateCustomerDto,
+        user_id: &str,
+    ) -> Result<CustomerEntity, AppError> {
+        let found_customer = self.customers_repository.find_one(id).await?;
+
+        if found_customer.user_id != user_id {
+            return Err(AppError::NotFound {
+                message: "'The customer was not found'".into(),
+            });
+        }
+
+        let update_db_dto = CustomersService::map_update_dto_to_update_db_dto(
+            update_dto,
+            "mockAuth0Id".into(),
+            "mock@gmail.com".into(),
+        );
+        let updated_customer_from_db = self.customers_repository.update(id, update_db_dto).await?;
+
+        let updated_customer_entity = updated_customer_from_db.into();
+
+        Ok(updated_customer_entity)
+    }
+
+    pub async fn update_as_admin(
+        &self,
+        id: &str,
+        update_dto: UpdateCustomerDto,
+    ) -> Result<CustomerEntity, AppError> {
+        let update_db_dto = CustomersService::map_update_dto_to_update_db_dto(
+            update_dto,
+            "mockAuth0Id".into(),
+            "mock@gmail.com".into(),
+        );
+        let updated_customer_from_db = self.customers_repository.update(id, update_db_dto).await?;
+
+        let updated_customer_entity = updated_customer_from_db.into();
+
+        Ok(updated_customer_entity)
+    }
+
+    pub async fn delete(&self, id: &str, user_id: &str) -> Result<CustomerEntity, AppError> {
+        let found_customer = self.customers_repository.find_one(id).await?;
+
+        if found_customer.user_id != user_id {
+            return Err(AppError::NotFound {
+                message: "'The customer was not found'".into(),
+            });
+        }
+
+        let deleted_customer_from_db = self.customers_repository.delete(id).await?;
+        let deleted_customer_entity = deleted_customer_from_db.into();
+
+        Ok(deleted_customer_entity)
     }
 
     fn map_create_dto_to_create_db_dto(
         create_dto: CreateCustomerDto,
-        auth_0_id: String,
-        email: String,
+        user_id: &str,
+        email: &str,
     ) -> CreateCustomerDbDto {
         CreateCustomerDbDto {
-            auth_0_id,
-            email,
+            user_id: user_id.into(),
+            email: email.into(),
             first_name: create_dto.first_name,
             last_name: create_dto.last_name,
             birthdate: create_dto.birthdate,
@@ -62,71 +161,5 @@ impl CustomersService {
             phone: update_dto.phone,
             sex: update_dto.sex,
         }
-    }
-
-    pub async fn find_one(&self, id: &str) -> Result<CustomerEntity, AppError> {
-        let customer_from_db = self.customers_repository.find_one(id).await?;
-
-        let customer_entity =
-            CustomersService::map_customer_from_db_to_customer_entity(customer_from_db);
-
-        Ok(customer_entity)
-    }
-
-    pub async fn find_many(&self) -> Result<Vec<CustomerEntity>, AppError> {
-        let customers_from_db = self.customers_repository.find_many().await?;
-
-        let customer_entities = customers_from_db
-            .into_iter()
-            .map(|customer_from_db| {
-                CustomersService::map_customer_from_db_to_customer_entity(customer_from_db)
-            })
-            .collect();
-
-        Ok(customer_entities)
-    }
-
-    pub async fn create(&self, create_dto: CreateCustomerDto) -> Result<CustomerEntity, AppError> {
-        let create_customer_db_dto = CustomersService::map_create_dto_to_create_db_dto(
-            create_dto,
-            "mockAuth0Id".to_string(),
-            "mock@gmail.com".to_string(),
-        );
-        let created_customer_from_db = self
-            .customers_repository
-            .create(create_customer_db_dto)
-            .await?;
-
-        let created_customer_entity =
-            CustomersService::map_customer_from_db_to_customer_entity(created_customer_from_db);
-
-        Ok(created_customer_entity)
-    }
-
-    pub async fn update(
-        &self,
-        id: &str,
-        update_dto: UpdateCustomerDto,
-    ) -> Result<CustomerEntity, AppError> {
-        let update_db_dto = CustomersService::map_update_dto_to_update_db_dto(
-            update_dto,
-            "mockAuth0Id".to_string(),
-            "mock@gmail.com".to_string(),
-        );
-        let updated_customer_from_db = self.customers_repository.update(id, update_db_dto).await?;
-
-        let updated_customer_entity =
-            CustomersService::map_customer_from_db_to_customer_entity(updated_customer_from_db);
-
-        Ok(updated_customer_entity)
-    }
-
-    pub async fn delete(&self, id: &str) -> Result<CustomerEntity, AppError> {
-        let deleted_customer_from_db = self.customers_repository.delete(id).await?;
-
-        let deleted_customer_entity =
-            CustomersService::map_customer_from_db_to_customer_entity(deleted_customer_from_db);
-
-        Ok(deleted_customer_entity)
     }
 }

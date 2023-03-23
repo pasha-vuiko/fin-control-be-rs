@@ -12,7 +12,7 @@ impl AuthBearerCustom for BearerAuth {
     const ERROR_OVERWRITE: Option<&'static str> = Some("test"); // <-- define overwriting message here
 
     fn from_header(contents: &str) -> Self {
-        Self(contents.to_string())
+        Self(contents.into())
     }
 }
 
@@ -29,7 +29,7 @@ where
             Ok(bearer_token) => Ok(bearer_token),
             Err((_, message)) => {
                 let err = AppError::Unauthorized {
-                    message: message.to_string(),
+                    message: message.into(),
                 };
 
                 Err(err)
