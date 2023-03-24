@@ -13,17 +13,16 @@ impl RedisService {
         }
     }
 
-    pub async fn get<'a, T>(&self, key: &str) -> Result<T, AppError>
+    pub async fn get<T>(&self, key: &str) -> Result<T, AppError>
     where
-        T: serde::Deserialize<'a>,
+        T: serde::de::DeserializeOwned,
     {
         let mut redis_connection_manager = self.redis_connection_manager.clone();
 
         let cached_value = redis_connection_manager.get(key).await?;
 
         match cached_value {
-            // TODO Fix possible memory leak
-            Value::Data(value) => match serde_json::from_slice::<T>(value.leak()) {
+            Value::Data(value) => match serde_json::from_slice::<T>(&value) {
                 Ok(deserialized_value) => Ok(deserialized_value),
                 Err(err) => Err(AppError::Internal {
                     message: err.to_string(),
@@ -70,14 +69,14 @@ impl RedisService {
         }
     }
 
-    pub async fn wrap<'a, T, F, Fut>(
+    pub async fn wrap<T, F, Fut>(
         &self,
         func: F,
         cache_key: &str,
         expires: usize,
     ) -> Result<T, AppError>
     where
-        T: serde::Serialize + serde::Deserialize<'a>,
+        T: serde::Serialize + serde::de::DeserializeOwned,
         F: FnOnce() -> Fut,
         Fut: Future<Output = Result<T, AppError>>,
     {
