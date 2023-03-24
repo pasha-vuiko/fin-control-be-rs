@@ -15,11 +15,11 @@ protocol = "sparse"
 
 [dependencies]
 axum = "0.6.12"
-tokio = { version = "1.0", features = ["full"] }
+tokio = { version = "1.26", features = ["full"] }
 
 # Serialization/Deserialization
-serde_json = "1.0.93"
-serde = { version = "1.0.152", features = ["derive"] }
+serde_json = "1.0.94"
+serde = { version = "1.0.158", features = ["derive"] }
 
 # Config
 dotenv = "0.15.0"
@@ -51,5 +51,5 @@ tower-request-id = "0.2.1"
 derive_more = "0.99.17"
 
 # Util crates
-chrono = "0.4.23" # Working with dates
-async-trait = "0.1.66"
+chrono = "0.4.24" # Working with dates
+async-trait = "0.1.68"
