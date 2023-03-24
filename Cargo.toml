@@ -14,7 +14,7 @@ resolver = "2"
 protocol = "sparse"
 
 [dependencies]
-axum = "0.6.10"
+axum = "0.6.12"
 tokio = { version = "1.0", features = ["full"] }
 
 # Serialization/Deserialization
