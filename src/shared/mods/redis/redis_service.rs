@@ -5,11 +5,13 @@ use std::future::Future;
 #[derive(Clone)]
 pub struct RedisService {
     redis_connection_manager: ConnectionManager,
+    expiration: usize,
 }
 impl RedisService {
-    pub fn new(redis_connection_manager: ConnectionManager) -> Self {
+    pub fn new(redis_connection_manager: ConnectionManager, expiration: usize) -> Self {
         Self {
             redis_connection_manager,
+            expiration,
         }
     }
 
@@ -37,7 +39,7 @@ impl RedisService {
         }
     }
 
-    pub async fn set<T>(&self, key: &str, value: &T, expires: usize) -> Result<String, AppError>
+    pub async fn set<T>(&self, key: &str, value: &T) -> Result<String, AppError>
     where
         T: serde::Serialize,
     {
@@ -48,7 +50,7 @@ impl RedisService {
                 let redis_result: RedisResult<(String, i32)> = redis::pipe()
                     .atomic()
                     .set(key, &serizalized_value)
-                    .expire(key, expires)
+                    .expire(key, self.expiration)
                     .query_async(&mut redis_connection_manager)
                     .await;
 
@@ -62,19 +64,13 @@ impl RedisService {
             Err(err) => Err(AppError::Internal {
                 message: format!(
                     "Failed to serialize value for key '{}' to set in Redis, err: '{}'",
-                    key,
-                    err.to_string()
+                    key, err
                 ),
             }),
         }
     }
 
-    pub async fn wrap<T, F, Fut>(
-        &self,
-        func: F,
-        cache_key: &str,
-        expires: usize,
-    ) -> Result<T, AppError>
+    pub async fn wrap_fn<T, F, Fut>(&self, func: F, cache_key: &str) -> Result<T, AppError>
     where
         T: serde::Serialize + serde::de::DeserializeOwned,
         F: FnOnce() -> Fut,
@@ -84,7 +80,7 @@ impl RedisService {
             Ok(cached_value) => Ok(cached_value),
             Err(_) => {
                 let func_value = func().await?;
-                let set_result = self.set(cache_key, &func_value, expires).await;
+                let set_result = self.set(cache_key, &func_value).await;
 
                 match set_result {
                     Ok(_) => {
