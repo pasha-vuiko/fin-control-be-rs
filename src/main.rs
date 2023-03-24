@@ -24,13 +24,11 @@ async fn main() {
     let config = envy::from_env::<AppConfig>().expect("failed to parse app config");
 
     // Prisma client
-    let prisma_client = Arc::new(
-        prisma::new_client()
-            .await
-            .expect("Failed to generate prisma client"),
-    );
+    let prisma_client = prisma::new_client()
+        .await
+        .expect("Failed to generate prisma client");
     // Redis Connection manager
-    let redis_service = Arc::new(get_redis_service(&config).await);
+    let redis_service = get_redis_service(&config).await;
     // Authentication
     let auth_service = AuthService::from_auth_domain(&config.auth_auth0_domain)
         .await
@@ -38,8 +36,13 @@ async fn main() {
 
     // TODO Add pagination for APIs
     // TODO Add expenses API
-    let api_router =
-        get_api_router(prisma_client, redis_service, config.clone(), auth_service).await;
+    let api_router = get_api_router(
+        config.clone(),
+        Arc::new(prisma_client),
+        Arc::new(redis_service),
+        Arc::new(auth_service),
+    )
+    .await;
 
     // building of an application
     let app = Router::new()
