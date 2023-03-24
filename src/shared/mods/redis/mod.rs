@@ -15,5 +15,5 @@ pub async fn get_redis_service(config: &AppConfig) -> RedisService {
         .await
         .expect("Can't create Redis connection manager");
 
-    RedisService::new(redis_connection_manager)
+    RedisService::new(redis_connection_manager, config.redis_ttl)
 }
