@@ -1,12 +1,13 @@
-use crate::api::customers::dto::create_customer_dto::CreateCustomerDto;
-use crate::api::customers::dto::update_customer_dto::UpdateCustomerDto;
-use crate::api::customers::entities::customer_entity::CustomerEntity;
-use crate::api::customers::CustomersApiState;
-use crate::shared::errors::app_error::AppError;
-use crate::shared::mods::auth::user::User;
-use crate::shared::mods::auth::{extractors::BearerAuth, roles::Roles};
 use axum::extract::{OriginalUri, Path, State};
 use axum::Json;
+
+use crate::api::customers::{
+    dto::{create_customer_dto::CreateCustomerDto, update_customer_dto::UpdateCustomerDto},
+    entities::customer_entity::CustomerEntity,
+    CustomersApiState,
+};
+use crate::shared::errors::app_error::AppError;
+use crate::shared::mods::auth::{extractors::BearerAuth, roles::Roles, user::User};
 
 pub async fn find_one(
     BearerAuth(token): BearerAuth,
@@ -26,14 +27,13 @@ pub async fn find_one(
     if user.roles.contains(&Roles::Customer) {
         let found_customer = state
             .redis_service
-            .wrap(
+            .wrap_fn(
                 || {
                     state
                         .customers_service
                         .find_one_as_customer(&customer_id, &user.id)
                 },
                 &req_uri,
-                state.config.redis_ttl,
             )
             .await?;
 
@@ -62,11 +62,7 @@ pub async fn find_many(
     let req_uri = original_uri.to_string();
     let found_products = state
         .redis_service
-        .wrap(
-            || state.customers_service.find_many(),
-            &req_uri,
-            state.config.redis_ttl,
-        )
+        .wrap_fn(|| state.customers_service.find_many(), &req_uri)
         .await?;
 
     Ok(found_products.into())

@@ -37,6 +37,7 @@ async fn main() {
         .expect("Failed to generate auth service");
 
     // TODO Add pagination for APIs
+    // TODO Add expenses API
     let api_router =
         get_api_router(prisma_client, redis_service, config.clone(), auth_service).await;
 
