@@ -18,17 +18,17 @@ mod structs;
 mod traits;
 
 pub fn get_router(
+    config: AppConfig,
     prisma_client: Arc<PrismaClient>,
     redis_service: Arc<RedisService>,
-    config: AppConfig,
-    auth_service: AuthService,
+    auth_service: Arc<AuthService>,
 ) -> Router {
     let customers_repository = Arc::new(CustomerRepository::new(prisma_client));
     let customers_service = CustomersService::new(customers_repository);
     let api_state = CustomersApiState {
+        config,
         redis_service,
         customers_service,
-        config,
         auth_service,
     };
 
@@ -51,8 +51,8 @@ pub fn get_router(
 
 #[derive(Clone)]
 pub struct CustomersApiState {
+    pub config: AppConfig,
     pub customers_service: CustomersService,
     pub redis_service: Arc<RedisService>,
-    pub config: AppConfig,
-    pub auth_service: AuthService,
+    pub auth_service: Arc<AuthService>,
 }
