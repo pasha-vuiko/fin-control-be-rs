@@ -10,17 +10,17 @@ use crate::shared::mods::redis::redis_service::RedisService;
 mod customers;
 
 pub async fn get_api_router(
+    config: AppConfig,
     prisma_client: Arc<PrismaClient>,
     redis_service: Arc<RedisService>,
-    config: AppConfig,
-    auth_service: AuthService,
+    auth_service: Arc<AuthService>,
 ) -> Router {
     Router::new()
         .route("/", get(index))
         .merge(customers::get_router(
+            config,
             prisma_client,
             redis_service,
-            config,
             auth_service,
         ))
 }
