@@ -14,7 +14,7 @@ resolver = "2"
 protocol = "sparse"
 
 [dependencies]
-axum = "0.6.12"
+axum = { version = "0.6.12", features = ["headers"] }
 tokio = { version = "1.26", features = ["full"] }
 
 # Serialization/Deserialization
@@ -53,3 +53,4 @@ derive_more = "0.99.17"
 # Util crates
 chrono = "0.4.24" # Working with dates
 async-trait = "0.1.68"
+base64 = "0.21.0"

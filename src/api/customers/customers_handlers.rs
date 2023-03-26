@@ -1,4 +1,4 @@
-use axum::extract::{OriginalUri, Path, State};
+use axum::extract::{Path, State};
 use axum::Json;
 
 use crate::api::customers::{
@@ -12,29 +12,19 @@ use crate::shared::mods::auth::{extractors::BearerAuth, roles::Roles, user::User
 pub async fn find_one(
     BearerAuth(token): BearerAuth,
     Path(customer_id): Path<String>,
-    OriginalUri(original_uri): OriginalUri,
     State(state): State<CustomersApiState>,
 ) -> Result<CustomerEntityJson, AppError> {
     // Authorization
-    let user_claims = state
+    let user: User = state
         .auth_service
         .authenticate(&token, vec![Roles::Admin, Roles::Customer])
-        .await?;
-    let user = User::from(user_claims);
+        .await?
+        .into();
 
-    let req_uri = original_uri.to_string();
-
-    if user.roles.contains(&Roles::Customer) {
+    if user.is_admin() {
         let found_customer = state
-            .redis_service
-            .wrap_fn(
-                || {
-                    state
-                        .customers_service
-                        .find_one_as_customer(&customer_id, &user.id)
-                },
-                &req_uri,
-            )
+            .customers_service
+            .find_one_as_admin(&customer_id)
             .await?;
 
         return Ok(found_customer.into());
@@ -42,14 +32,13 @@ pub async fn find_one(
 
     let found_customer = state
         .customers_service
-        .find_one_as_admin(&customer_id)
+        .find_one_as_customer(&customer_id, &user.id)
         .await?;
 
     Ok(found_customer.into())
 }
 
 pub async fn find_many(
-    OriginalUri(original_uri): OriginalUri,
     BearerAuth(token): BearerAuth,
     State(state): State<CustomersApiState>,
 ) -> Result<CustomerEntitiesJson, AppError> {
@@ -59,11 +48,7 @@ pub async fn find_many(
         .authenticate(&token, vec![Roles::Admin])
         .await?;
 
-    let req_uri = original_uri.to_string();
-    let found_products = state
-        .redis_service
-        .wrap_fn(|| state.customers_service.find_many(), &req_uri)
-        .await?;
+    let found_products = state.customers_service.find_many().await?;
 
     Ok(found_products.into())
 }
@@ -74,11 +59,11 @@ pub async fn create(
     Json(create_customer_dto): Json<CreateCustomerDto>,
 ) -> Result<CustomerEntityJson, AppError> {
     // Authorization
-    let user_claims = state
+    let user: User = state
         .auth_service
-        .authenticate(&token, vec![Roles::Customer])
-        .await?;
-    let user = User::from(user_claims);
+        .authenticate(&token, vec![Roles::Admin, Roles::Customer])
+        .await?
+        .into();
 
     let created_customer = state
         .customers_service
@@ -95,11 +80,11 @@ pub async fn update(
     Json(update_customer_dto): Json<UpdateCustomerDto>,
 ) -> Result<CustomerEntityJson, AppError> {
     // Authorization
-    let user_claims = state
+    let user: User = state
         .auth_service
         .authenticate(&token, vec![Roles::Admin, Roles::Customer])
-        .await?;
-    let user = User::from(user_claims);
+        .await?
+        .into();
 
     if user.roles.contains(&Roles::Admin) {
         let updated_customer = state
@@ -124,11 +109,11 @@ pub async fn delete(
     State(state): State<CustomersApiState>,
 ) -> Result<CustomerEntityJson, AppError> {
     // Authorization
-    let user_claims = state
+    let user: User = state
         .auth_service
         .authenticate(&token, vec![Roles::Admin, Roles::Customer])
-        .await?;
-    let user = User::from(user_claims);
+        .await?
+        .into();
 
     let deleted_customer = state
         .customers_service
