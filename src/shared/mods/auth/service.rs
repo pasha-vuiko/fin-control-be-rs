@@ -1,4 +1,7 @@
 use alcoholic_jwt::{token_kid, validate, Validation, JWKS};
+use base64;
+use base64::Engine;
+use serde::de::DeserializeOwned;
 
 use crate::shared::errors::app_error::AppError;
 use crate::shared::mods::auth::{claims::UserJwtClaims, roles::Roles};
@@ -96,5 +99,27 @@ impl AuthService {
                 })
             }
         }
+    }
+
+    pub fn get_claims(&self, token: &str) -> Result<UserJwtClaims, AppError> {
+        let parts = token.splitn(3, '.').collect::<Vec<&str>>();
+        let claims_part = parts.get(1);
+
+        match claims_part {
+            Some(&claims_part) => {
+                AuthService::deserialize_jwt_part(claims_part).map_err(|err| err.into())
+            }
+            None => Err(AppError::Internal {
+                message: "Token is not valid".into(),
+            }),
+        }
+    }
+
+    fn deserialize_jwt_part<T: DeserializeOwned>(
+        part: &str,
+    ) -> Result<T, Box<dyn std::error::Error>> {
+        let json = base64::engine::general_purpose::URL_SAFE_NO_PAD.decode(part.as_bytes())?;
+
+        serde_json::from_slice(&json).map_err(Into::into)
     }
 }

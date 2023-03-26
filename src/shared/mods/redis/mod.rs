@@ -1,7 +1,8 @@
 use crate::shared::config::AppConfig;
-
-pub mod redis_service;
 use crate::shared::mods::redis::redis_service::RedisService;
+
+pub mod middlewares;
+pub mod redis_service;
 
 pub async fn get_redis_service(config: &AppConfig) -> RedisService {
     let redis_uri = format!(

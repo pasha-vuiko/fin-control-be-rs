@@ -4,7 +4,7 @@ use std::future::Future;
 
 #[derive(Clone)]
 pub struct RedisService {
-    redis_connection_manager: ConnectionManager,
+    pub redis_connection_manager: ConnectionManager,
     expiration: usize,
 }
 impl RedisService {
@@ -15,12 +15,31 @@ impl RedisService {
         }
     }
 
+    pub async fn get_str(&self, key: &str) -> Result<String, AppError> {
+        let mut redis_connection_manager = self.redis_connection_manager.clone();
+        let cached_value = redis_connection_manager.get(key).await?;
+
+        match cached_value {
+            Value::Data(value) => match String::from_utf8(value) {
+                Ok(str) => Ok(str),
+                Err(err) => Err(AppError::Internal {
+                    message: err.to_string(),
+                }),
+            },
+            Value::Nil => Err(AppError::Internal {
+                message: "Value is not found".into(),
+            }),
+            _ => Err(AppError::Internal {
+                message: format!("Some error happen on fetching key '{}'", key),
+            }),
+        }
+    }
+
     pub async fn get<T>(&self, key: &str) -> Result<T, AppError>
     where
         T: serde::de::DeserializeOwned,
     {
         let mut redis_connection_manager = self.redis_connection_manager.clone();
-
         let cached_value = redis_connection_manager.get(key).await?;
 
         match cached_value {
@@ -66,6 +85,24 @@ impl RedisService {
                     "Failed to serialize value for key '{}' to set in Redis, err: '{}'",
                     key, err
                 ),
+            }),
+        }
+    }
+
+    pub async fn set_str(&self, key: &str, value: &str) -> Result<String, AppError> {
+        let mut redis_connection_manager = self.redis_connection_manager.clone();
+
+        let redis_result: RedisResult<(String, i32)> = redis::pipe()
+            .atomic()
+            .set(key, value)
+            .expire(key, self.expiration)
+            .query_async(&mut redis_connection_manager)
+            .await;
+
+        match redis_result {
+            Ok(result) => Ok(result.0),
+            Err(err) => Err(AppError::Internal {
+                message: err.to_string(),
             }),
         }
     }
