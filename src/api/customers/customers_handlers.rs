@@ -7,19 +7,16 @@ use crate::api::customers::{
     CustomersApiState,
 };
 use crate::shared::errors::app_error::AppError;
-use crate::shared::mods::auth::{extractors::BearerAuth, roles::Roles, user::User};
+use crate::shared::mods::auth::service::AuthService;
+use crate::shared::mods::auth::{extractors::BearerAuth, roles::Roles};
 
 pub async fn find_one(
-    BearerAuth(token): BearerAuth,
+    BearerAuth(user): BearerAuth,
     Path(customer_id): Path<String>,
     State(state): State<CustomersApiState>,
 ) -> Result<CustomerEntityJson, AppError> {
     // Authorization
-    let user: User = state
-        .auth_service
-        .authenticate(&token, vec![Roles::Admin, Roles::Customer])
-        .await?
-        .into();
+    AuthService::check_user_roles(&[Roles::Admin, Roles::Customer], &user)?;
 
     if user.is_admin() {
         let found_customer = state
@@ -39,14 +36,11 @@ pub async fn find_one(
 }
 
 pub async fn find_many(
-    BearerAuth(token): BearerAuth,
+    BearerAuth(user): BearerAuth,
     State(state): State<CustomersApiState>,
 ) -> Result<CustomerEntitiesJson, AppError> {
     // Authorization
-    state
-        .auth_service
-        .authenticate(&token, vec![Roles::Admin])
-        .await?;
+    AuthService::check_user_roles(&[Roles::Admin], &user)?;
 
     let found_products = state.customers_service.find_many().await?;
 
@@ -54,16 +48,12 @@ pub async fn find_many(
 }
 
 pub async fn create(
-    BearerAuth(token): BearerAuth,
+    BearerAuth(user): BearerAuth,
     State(state): State<CustomersApiState>,
     Json(create_customer_dto): Json<CreateCustomerDto>,
 ) -> Result<CustomerEntityJson, AppError> {
     // Authorization
-    let user: User = state
-        .auth_service
-        .authenticate(&token, vec![Roles::Admin, Roles::Customer])
-        .await?
-        .into();
+    AuthService::check_user_roles(&[Roles::Admin, Roles::Customer], &user)?;
 
     let created_customer = state
         .customers_service
@@ -74,19 +64,15 @@ pub async fn create(
 }
 
 pub async fn update(
-    BearerAuth(token): BearerAuth,
+    BearerAuth(user): BearerAuth,
     Path(customer_id): Path<String>,
     State(state): State<CustomersApiState>,
     Json(update_customer_dto): Json<UpdateCustomerDto>,
 ) -> Result<CustomerEntityJson, AppError> {
     // Authorization
-    let user: User = state
-        .auth_service
-        .authenticate(&token, vec![Roles::Admin, Roles::Customer])
-        .await?
-        .into();
+    AuthService::check_user_roles(&[Roles::Admin, Roles::Customer], &user)?;
 
-    if user.roles.contains(&Roles::Admin) {
+    if user.is_admin() {
         let updated_customer = state
             .customers_service
             .update_as_admin(&customer_id, update_customer_dto)
@@ -104,16 +90,12 @@ pub async fn update(
 }
 
 pub async fn delete(
-    BearerAuth(token): BearerAuth,
+    BearerAuth(user): BearerAuth,
     Path(customer_id): Path<String>,
     State(state): State<CustomersApiState>,
 ) -> Result<CustomerEntityJson, AppError> {
     // Authorization
-    let user: User = state
-        .auth_service
-        .authenticate(&token, vec![Roles::Admin, Roles::Customer])
-        .await?
-        .into();
+    AuthService::check_user_roles(&[Roles::Admin, Roles::Customer], &user)?;
 
     let deleted_customer = state
         .customers_service

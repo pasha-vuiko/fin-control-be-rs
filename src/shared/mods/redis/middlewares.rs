@@ -1,9 +1,7 @@
 use crate::shared::mods::auth::service::AuthService;
 use crate::shared::mods::redis::redis_service::RedisService;
 use axum::body::HttpBody;
-use axum::extract::{OriginalUri, State, TypedHeader};
-use axum::headers::authorization::Bearer;
-use axum::headers::Authorization;
+use axum::extract::{OriginalUri, State};
 use axum::http::{header, Method, Request};
 use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
@@ -14,7 +12,6 @@ pub async fn json_cache<B>(
     OriginalUri(original_uri): OriginalUri,
     State(redis_service): State<Arc<RedisService>>,
     State(auth_service): State<Arc<AuthService>>,
-    TypedHeader(bearer_token): TypedHeader<Authorization<Bearer>>,
     request: Request<B>,
     next: Next<B>,
 ) -> Response {
@@ -28,15 +25,18 @@ pub async fn json_cache<B>(
     let mut response: Response = match cached_response {
         Ok(cached_response_body) => cached_response_body.into_response(),
         Err(_) => {
+            let bearer_token = get_bearer_token(&request);
             let original_response = next.run(request).await;
             let response_status = original_response.status();
 
             if response_status.is_server_error() || response_status.is_client_error() {
                 return original_response;
             }
-            if let Ok(claims) = auth_service.get_claims(bearer_token.token()) {
-                if claims.is_admin() {
-                    return original_response;
+            if let Some(bearer_token) = bearer_token {
+                if let Ok(claims) = auth_service.get_claims(&bearer_token) {
+                    if claims.is_admin() {
+                        return original_response;
+                    }
                 }
             }
 
@@ -90,4 +90,12 @@ async fn set_response_cache(
         },
         None => response,
     }
+}
+
+fn get_bearer_token<B>(request: &Request<B>) -> Option<String> {
+    let authorization_header = request.headers().get(header::AUTHORIZATION)?;
+    let bearer_token = authorization_header.to_str().ok()?;
+    let bearer_token = bearer_token.trim_start_matches("Bearer ");
+
+    Some(bearer_token.to_string())
 }
