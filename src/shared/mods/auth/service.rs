@@ -4,6 +4,7 @@ use base64::Engine;
 use serde::de::DeserializeOwned;
 
 use crate::shared::errors::app_error::AppError;
+use crate::shared::mods::auth::user::User;
 use crate::shared::mods::auth::{claims::UserJwtClaims, roles::Roles};
 
 #[derive(Clone)]
@@ -28,6 +29,19 @@ impl AuthService {
         let val = res.json::<JWKS>().await?;
 
         Ok(val)
+    }
+
+    pub fn check_user_roles(required_roles: &[Roles], user: &User) -> Result<bool, AppError> {
+        let user_roles = user.roles.clone();
+        let roles_match = Self::check_roles_match(&required_roles, &user_roles);
+
+        if roles_match {
+            Ok(true)
+        } else {
+            Err(AppError::Forbidden {
+                message: "User is not authorized to access this resource".into(),
+            })
+        }
     }
 
     fn check_roles_match(required_roles: &[Roles], user_roles: &[Roles]) -> bool {

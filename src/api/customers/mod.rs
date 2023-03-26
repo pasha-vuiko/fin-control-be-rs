@@ -38,18 +38,16 @@ pub fn get_router(
         .route(
             "/:id",
             get(customers_handlers::find_one)
-                .layer(from_fn_with_state(api_state.clone(), json_cache))
                 .patch(customers_handlers::update)
                 .delete(customers_handlers::delete),
         )
         .route(
             "/",
-            get(customers_handlers::find_many)
-                .layer(from_fn_with_state(api_state.clone(), json_cache))
-                .post(customers_handlers::create),
+            get(customers_handlers::find_many).post(customers_handlers::create),
         );
 
     Router::new()
         .nest("/customers", routes)
-        .with_state(api_state)
+        .with_state(api_state.clone())
+        .layer(from_fn_with_state(api_state, json_cache))
 }

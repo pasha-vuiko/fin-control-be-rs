@@ -1,39 +1,54 @@
-use crate::shared::errors::app_error::AppError;
 use async_trait::async_trait;
-use axum::extract::FromRequestParts;
-use axum::http::{request::Parts, StatusCode};
-use axum_auth::AuthBearerCustom;
+use axum::extract::{FromRequestParts, State};
+use axum::http::{header, request::Parts};
+use std::convert::Infallible;
+use std::sync::Arc;
 
-pub struct BearerAuth(pub String);
+use crate::shared::errors::app_error::AppError;
+use crate::shared::mods::auth::service::AuthService;
+use crate::shared::mods::auth::user::User;
 
-// this is where you define your custom options
-impl AuthBearerCustom for BearerAuth {
-    const ERROR_CODE: StatusCode = StatusCode::UNAUTHORIZED; // <-- define custom status code here
-    const ERROR_OVERWRITE: Option<&'static str> = Some("test"); // <-- define overwriting message here
-
-    fn from_header(contents: &str) -> Self {
-        Self(contents.into())
-    }
-}
+pub struct BearerAuth(pub User);
 
 // this is just boilerplate, copy-paste this
 #[async_trait]
-impl<B> FromRequestParts<B> for BearerAuth
+impl<S> FromRequestParts<S> for BearerAuth
 where
-    B: Send + Sync,
+    S: Send + Sync,
+    Arc<AuthService>: axum::extract::FromRef<S>,
 {
     type Rejection = AppError;
 
-    async fn from_request_parts(parts: &mut Parts, _: &B) -> Result<Self, Self::Rejection> {
-        match Self::decode_request_parts(parts) {
-            Ok(bearer_token) => Ok(bearer_token),
-            Err((_, message)) => {
-                let err = AppError::Unauthorized {
-                    message: message.into(),
-                };
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        match get_bearer_token(parts) {
+            Some(token) => {
+                let state: Result<State<Arc<AuthService>>, Infallible> =
+                    State::from_request_parts(parts, state).await;
 
-                Err(err)
+                match state {
+                    Ok(state) => {
+                        let State(auth_service) = state;
+
+                        let user_claims = auth_service.authenticate(&token, vec![]).await?;
+
+                        Ok(BearerAuth(user_claims.into()))
+                    }
+                    Err(err) => Err(AppError::Internal {
+                        message: err.to_string(),
+                    }),
+                }
             }
+            None => Err(AppError::Unauthorized {
+                message: "Missing Authorization header".into(),
+            }),
         }
     }
+}
+
+fn get_bearer_token(parts: &Parts) -> Option<String> {
+    let authorization_header = parts.headers.get(header::AUTHORIZATION)?;
+    let bearer_token = authorization_header.to_str().ok()?;
+    let bearer_token = bearer_token.trim_start_matches("Bearer ");
+
+    Some(bearer_token.to_string())
 }
