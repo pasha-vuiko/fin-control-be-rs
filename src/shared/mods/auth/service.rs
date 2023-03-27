@@ -4,8 +4,9 @@ use base64::Engine;
 use serde::de::DeserializeOwned;
 
 use crate::shared::errors::app_error::AppError;
-use crate::shared::mods::auth::user::User;
-use crate::shared::mods::auth::{claims::UserJwtClaims, roles::Roles};
+use crate::shared::mods::auth::roles::Roles;
+use crate::shared::mods::auth::structs::claims::UserJwtClaims;
+use crate::shared::mods::auth::structs::user::User;
 
 #[derive(Clone)]
 pub struct AuthService {
@@ -24,13 +25,6 @@ impl AuthService {
         Ok(Self { jwks, issuer })
     }
 
-    async fn fetch_jwks(uri: &str) -> Result<JWKS, Box<dyn std::error::Error>> {
-        let res = reqwest::get(uri).await?;
-        let val = res.json::<JWKS>().await?;
-
-        Ok(val)
-    }
-
     pub fn check_user_roles(required_roles: &[Roles], user: &User) -> Result<bool, AppError> {
         let user_roles = user.roles.clone();
         let roles_match = Self::check_roles_match(&required_roles, &user_roles);
@@ -42,6 +36,29 @@ impl AuthService {
                 message: "User is not authorized to access this resource".into(),
             })
         }
+    }
+
+    pub fn authenticate(
+        &self,
+        token: &str,
+        required_roles: Vec<Roles>,
+    ) -> Result<UserJwtClaims, AppError> {
+        let claims = self.validate_token(token)?;
+        tracing::debug!("Token is validated successfully");
+
+        match Self::check_roles_match(&required_roles, &claims.roles) {
+            true => Ok(claims),
+            false => Err(AppError::Forbidden {
+                message: "User is not authorized to access this resource".into(),
+            }),
+        }
+    }
+
+    async fn fetch_jwks(uri: &str) -> Result<JWKS, Box<dyn std::error::Error>> {
+        let res = reqwest::get(uri).await?;
+        let val = res.json::<JWKS>().await?;
+
+        Ok(val)
     }
 
     fn check_roles_match(required_roles: &[Roles], user_roles: &[Roles]) -> bool {
@@ -59,23 +76,7 @@ impl AuthService {
         true
     }
 
-    pub async fn authenticate(
-        &self,
-        token: &str,
-        required_roles: Vec<Roles>,
-    ) -> Result<UserJwtClaims, AppError> {
-        let claims = self.validate_token(token).await?;
-        tracing::debug!("Token is validated successfully");
-
-        match Self::check_roles_match(&required_roles, &claims.roles) {
-            true => Ok(claims),
-            false => Err(AppError::Forbidden {
-                message: "User is not authorized to access this resource".into(),
-            }),
-        }
-    }
-
-    async fn validate_token(&self, token: &str) -> Result<UserJwtClaims, AppError> {
+    fn validate_token(&self, token: &str) -> Result<UserJwtClaims, AppError> {
         let jwks = self.jwks.clone();
         let validations = vec![
             Validation::Issuer(self.issuer.to_string()),

@@ -67,7 +67,7 @@ impl From<RedisError> for AppError {
 impl From<QueryError> for AppError {
     fn from(value: QueryError) -> Self {
         Self::Internal {
-            message: format!("Prisma QueryError: {}", value.to_string()),
+            message: format!("Prisma QueryError: {}", value),
         }
     }
 }
@@ -75,7 +75,7 @@ impl From<QueryError> for AppError {
 impl From<serde_json::Error> for AppError {
     fn from(value: serde_json::Error) -> Self {
         Self::Internal {
-            message: format!("Serde JSON Error: {}", value.to_string()),
+            message: format!("Serde JSON Error: {}", value),
         }
     }
 }
@@ -83,7 +83,7 @@ impl From<serde_json::Error> for AppError {
 impl From<alcoholic_jwt::ValidationError> for AppError {
     fn from(value: alcoholic_jwt::ValidationError) -> Self {
         Self::Unauthorized {
-            message: format!("JWT Validation Error: {}", value.to_string()),
+            message: format!("JWT Validation Error: {}", value),
         }
     }
 }

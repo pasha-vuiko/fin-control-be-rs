@@ -22,9 +22,3 @@ pub struct UserJwtClaims {
     #[serde(rename(deserialize = "https://meta.com/roles"))]
     pub roles: Vec<Roles>,
 }
-
-impl UserJwtClaims {
-    pub fn is_admin(&self) -> bool {
-        self.roles.contains(&Roles::Admin)
-    }
-}
