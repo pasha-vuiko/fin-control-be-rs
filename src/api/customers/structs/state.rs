@@ -6,13 +6,13 @@ use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct CustomersApiState {
-    pub customers_service: CustomersService,
+    pub customers_service: Arc<CustomersService>,
     pub redis_service: Arc<RedisService>,
     pub auth_service: Arc<AuthService>,
 }
 
-impl FromRef<CustomersApiState> for CustomersService {
-    fn from_ref(app_state: &CustomersApiState) -> CustomersService {
+impl FromRef<CustomersApiState> for Arc<CustomersService> {
+    fn from_ref(app_state: &CustomersApiState) -> Arc<CustomersService> {
         app_state.customers_service.clone()
     }
 }
