@@ -38,7 +38,6 @@ async fn main() {
     // TODO Add expenses API
     // TODO Find out if Arcs are needed for DI
     let api_router = get_api_router(
-        config.clone(),
         Arc::new(prisma_client),
         Arc::new(redis_service),
         Arc::new(auth_service),

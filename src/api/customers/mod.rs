@@ -4,7 +4,6 @@ use std::sync::Arc;
 
 use crate::api::customers::customers_service::CustomersService;
 use crate::api::customers::structs::state::CustomersApiState;
-use crate::shared::config::AppConfig;
 use crate::shared::mods::auth::middlewares::AuthLayer;
 use crate::shared::mods::auth::roles::Roles;
 use crate::shared::mods::auth::service::AuthService;
@@ -22,7 +21,6 @@ mod structs;
 mod traits;
 
 pub fn get_router(
-    config: AppConfig,
     prisma_client: Arc<PrismaClient>,
     redis_service: Arc<RedisService>,
     auth_service: Arc<AuthService>,
@@ -30,7 +28,6 @@ pub fn get_router(
     let customers_repository = Arc::new(CustomerRepository::new(prisma_client));
     let customers_service = CustomersService::new(customers_repository);
     let api_state = CustomersApiState {
-        config,
         redis_service,
         customers_service,
         auth_service: auth_service.clone(),
