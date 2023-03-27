@@ -1,5 +1,6 @@
 use axum::extract::{Path, State};
 use axum::{Extension, Json};
+use std::sync::Arc;
 
 use crate::api::customers::customers_service::CustomersService;
 use crate::api::customers::{
@@ -12,7 +13,7 @@ use crate::shared::mods::auth::structs::user::User;
 pub async fn find_one(
     Extension(user): Extension<User>,
     Path(customer_id): Path<String>,
-    State(customers_service): State<CustomersService>,
+    State(customers_service): State<Arc<CustomersService>>,
 ) -> Result<CustomerEntityJson, AppError> {
     let found_customer = if user.is_admin() {
         customers_service.find_one_as_admin(&customer_id).await?
@@ -26,7 +27,7 @@ pub async fn find_one(
 }
 
 pub async fn find_many(
-    State(customers_service): State<CustomersService>,
+    State(customers_service): State<Arc<CustomersService>>,
 ) -> Result<CustomerEntitiesJson, AppError> {
     let found_products = customers_service.find_many().await?;
 
@@ -35,7 +36,7 @@ pub async fn find_many(
 
 pub async fn create(
     Extension(user): Extension<User>,
-    State(customers_service): State<CustomersService>,
+    State(customers_service): State<Arc<CustomersService>>,
     Json(create_customer_dto): Json<CreateCustomerDto>,
 ) -> Result<CustomerEntityJson, AppError> {
     let created_customer = customers_service
@@ -48,7 +49,7 @@ pub async fn create(
 pub async fn update(
     Extension(user): Extension<User>,
     Path(customer_id): Path<String>,
-    State(customers_service): State<CustomersService>,
+    State(customers_service): State<Arc<CustomersService>>,
     Json(update_customer_dto): Json<UpdateCustomerDto>,
 ) -> Result<CustomerEntityJson, AppError> {
     let updated_customer = if user.is_admin() {
@@ -64,10 +65,10 @@ pub async fn update(
     Ok(updated_customer.into())
 }
 
-pub async fn delete(
+pub async fn remove(
     Extension(user): Extension<User>,
     Path(customer_id): Path<String>,
-    State(customers_service): State<CustomersService>,
+    State(customers_service): State<Arc<CustomersService>>,
 ) -> Result<CustomerEntityJson, AppError> {
     let deleted_customer = if user.is_admin() {
         customers_service.delete_as_admin(&customer_id).await?

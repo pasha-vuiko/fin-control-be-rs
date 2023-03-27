@@ -28,7 +28,7 @@ pub fn get_router(
     auth_service: Arc<AuthService>,
 ) -> Router {
     let customers_repository = Arc::new(CustomerRepository::new(prisma_client));
-    let customers_service = CustomersService::new(customers_repository);
+    let customers_service = Arc::new(CustomersService::new(customers_repository));
     let api_state = CustomersApiState {
         redis_service,
         customers_service,
@@ -63,10 +63,10 @@ pub fn get_router(
             patch(customers_handlers::update)
                 .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
         )
-        // Delete
+        // Remove
         .route(
             "/:id",
-            delete(customers_handlers::delete)
+            delete(customers_handlers::remove)
                 .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
         );
 
