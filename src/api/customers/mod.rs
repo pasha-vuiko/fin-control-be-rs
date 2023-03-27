@@ -5,6 +5,8 @@ use std::sync::Arc;
 use crate::api::customers::customers_service::CustomersService;
 use crate::api::customers::structs::state::CustomersApiState;
 use crate::shared::config::AppConfig;
+use crate::shared::mods::auth::middlewares::AuthLayer;
+use crate::shared::mods::auth::roles::Roles;
 use crate::shared::mods::auth::service::AuthService;
 use crate::shared::mods::prisma::PrismaClient;
 use crate::shared::mods::redis::middlewares::json_cache;
@@ -31,23 +33,37 @@ pub fn get_router(
         config,
         redis_service,
         customers_service,
-        auth_service,
+        auth_service: auth_service.clone(),
     };
+    let auth_layer = AuthLayer::new(auth_service);
+    let cache_layer = from_fn_with_state(api_state.clone(), json_cache);
 
     let routes = Router::new()
         .route(
             "/:id",
+            // Find one
             get(customers_handlers::find_one)
+                .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer]))
+                .layer(cache_layer.clone())
+                // Update
                 .patch(customers_handlers::update)
-                .delete(customers_handlers::delete),
+                .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer]))
+                // Delete
+                .delete(customers_handlers::delete)
+                .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
         )
         .route(
             "/",
-            get(customers_handlers::find_many).post(customers_handlers::create),
+            // Find many
+            get(customers_handlers::find_many)
+                .layer(auth_layer.verify(vec![Roles::Admin]))
+                .layer(cache_layer)
+                // Create
+                .post(customers_handlers::create)
+                .layer(auth_layer.verify(vec![Roles::Customer])),
         );
 
     Router::new()
         .nest("/customers", routes)
-        .with_state(api_state.clone())
-        .layer(from_fn_with_state(api_state, json_cache))
+        .with_state(api_state)
 }

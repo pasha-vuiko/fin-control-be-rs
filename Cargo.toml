@@ -1,6 +1,6 @@
 [package]
 name = "fin-control-be-rs"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -10,12 +10,11 @@ members = [
 ]
 resolver = "2"
 
-[registries.crates-io]
-protocol = "sparse"
-
 [dependencies]
 axum = { version = "0.6.12", features = ["headers"] }
 tokio = { version = "1.26", features = ["full"] }
+tower = "0.4.13"
+tower-http = { version = "0.4.0", features = ["trace", "auth"] }
 
 # Serialization/Deserialization
 serde_json = "1.0.94"
@@ -44,7 +43,6 @@ redis = { version = "0.22.3", features = ["tokio-comp", "connection-manager"] }
 # Logger
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
 tracing = "0.1"
-tower-http = { version = "0.4.0", features = ["trace"] }
 tower-request-id = "0.2.1"
 
 # Error handling
@@ -54,3 +52,4 @@ derive_more = "0.99.17"
 chrono = "0.4.24" # Working with dates
 async-trait = "0.1.68"
 base64 = "0.21.0"
+futures-util = "0.3.27"
