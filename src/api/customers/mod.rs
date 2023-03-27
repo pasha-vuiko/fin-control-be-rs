@@ -1,15 +1,17 @@
 use crate::api::customers::customers_repository::CustomerRepository;
-use axum::{middleware::from_fn_with_state, routing::get, Router};
+use axum::{
+    middleware::from_fn_with_state,
+    routing::{delete, get, patch, post},
+    Router,
+};
 use std::sync::Arc;
 
-use crate::api::customers::customers_service::CustomersService;
-use crate::api::customers::structs::state::CustomersApiState;
-use crate::shared::mods::auth::middlewares::AuthLayer;
-use crate::shared::mods::auth::roles::Roles;
-use crate::shared::mods::auth::service::AuthService;
+use crate::api::customers::{
+    customers_service::CustomersService, structs::state::CustomersApiState,
+};
+use crate::shared::mods::auth::{middlewares::AuthLayer, roles::Roles, service::AuthService};
 use crate::shared::mods::prisma::PrismaClient;
-use crate::shared::mods::redis::middlewares::json_cache;
-use crate::shared::mods::redis::redis_service::RedisService;
+use crate::shared::mods::redis::{middlewares::json_cache, redis_service::RedisService};
 
 mod customers_handlers;
 mod customers_repository;
@@ -36,28 +38,36 @@ pub fn get_router(
     let cache_layer = from_fn_with_state(api_state.clone(), json_cache);
 
     let routes = Router::new()
+        // Find one
         .route(
             "/:id",
-            // Find one
             get(customers_handlers::find_one)
                 .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer]))
-                .layer(cache_layer.clone())
-                // Update
-                .patch(customers_handlers::update)
-                .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer]))
-                // Delete
-                .delete(customers_handlers::delete)
-                .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
+                .layer(cache_layer.clone()),
         )
+        // Find many
         .route(
             "/",
-            // Find many
             get(customers_handlers::find_many)
                 .layer(auth_layer.verify(vec![Roles::Admin]))
-                .layer(cache_layer)
-                // Create
-                .post(customers_handlers::create)
-                .layer(auth_layer.verify(vec![Roles::Customer])),
+                .layer(cache_layer),
+        )
+        // Create
+        .route(
+            "/",
+            post(customers_handlers::create).layer(auth_layer.verify(vec![Roles::Customer])),
+        )
+        // Update
+        .route(
+            "/:id",
+            patch(customers_handlers::update)
+                .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
+        )
+        // Delete
+        .route(
+            "/:id",
+            delete(customers_handlers::delete)
+                .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
         );
 
     Router::new()
