@@ -72,8 +72,7 @@ async fn set_response_cache(
 
                 match String::from_utf8(response_body_vec) {
                     Ok(response_body_str) => {
-                        let set_result =
-                            redis_service.set_str(&cache_key, &response_body_str).await;
+                        let set_result = redis_service.set_str(cache_key, &response_body_str).await;
 
                         match set_result {
                             Ok(_) => tracing::debug!(
