@@ -1,6 +1,7 @@
-use crate::shared::mods::auth::claims::UserJwtClaims;
 use crate::shared::mods::auth::roles::Roles;
+use crate::shared::mods::auth::structs::claims::UserJwtClaims;
 
+#[derive(Debug, Clone)]
 pub struct User {
     pub id: String,
     pub name: String,

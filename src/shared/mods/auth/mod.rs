@@ -1,5 +1,4 @@
-pub mod claims;
-pub mod extractors;
+pub mod middlewares;
 pub mod roles;
 pub mod service;
-pub mod user;
+pub mod structs;

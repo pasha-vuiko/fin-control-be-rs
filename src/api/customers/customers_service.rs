@@ -116,7 +116,18 @@ impl CustomersService {
         Ok(updated_customer_entity)
     }
 
-    pub async fn delete(&self, id: &str, user_id: &str) -> Result<CustomerEntity, AppError> {
+    pub async fn delete_as_admin(&self, id: &str) -> Result<CustomerEntity, AppError> {
+        let deleted_customer_from_db = self.customers_repository.delete(id).await?;
+        let deleted_customer_entity = deleted_customer_from_db.into();
+
+        Ok(deleted_customer_entity)
+    }
+
+    pub async fn delete_as_customer(
+        &self,
+        id: &str,
+        user_id: &str,
+    ) -> Result<CustomerEntity, AppError> {
         let found_customer = self.customers_repository.find_one(id).await?;
 
         if found_customer.user_id != user_id {

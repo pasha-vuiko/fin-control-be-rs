@@ -3,6 +3,7 @@ use axum::Router;
 use std::{env, sync::Arc};
 
 use crate::shared::config::AppConfig;
+use crate::shared::errors::app_error::AppError;
 use crate::shared::mods::auth::service::AuthService;
 use crate::shared::mods::prisma::PrismaClient;
 use crate::shared::mods::redis::redis_service::RedisService;
@@ -25,8 +26,13 @@ pub async fn get_api_router(
         ))
 }
 
-async fn index() -> String {
-    let app_ver = env::var("CARGO_PKG_VERSION").unwrap();
+async fn index() -> Result<String, AppError> {
+    let app_ver = env::var("CARGO_PKG_VERSION");
 
-    format!("App version: {}", app_ver)
+    match app_ver {
+        Ok(app_ver) => Ok(format!("App version: {}", app_ver)),
+        Err(err) => Err(AppError::Internal {
+            message: format!("Failed to get App Version: {}", err),
+        }),
+    }
 }

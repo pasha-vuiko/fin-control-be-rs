@@ -1,5 +1,5 @@
 use crate::shared::mods::auth::service::AuthService;
-use crate::shared::mods::redis::redis_service::RedisService;
+use crate::shared::mods::auth::structs::user::User;
 use axum::body::HttpBody;
 use axum::extract::{OriginalUri, State};
 use axum::http::{header, Method, Request};
@@ -7,6 +7,9 @@ use axum::middleware::Next;
 use axum::response::{IntoResponse, Response};
 use std::ops::Deref;
 use std::sync::Arc;
+
+use crate::shared::mods::redis::redis_service::RedisService;
+use crate::shared::utils::get_bearer_token;
 
 pub async fn json_cache<B>(
     OriginalUri(original_uri): OriginalUri,
@@ -34,7 +37,9 @@ pub async fn json_cache<B>(
             }
             if let Some(bearer_token) = bearer_token {
                 if let Ok(claims) = auth_service.get_claims(&bearer_token) {
-                    if claims.is_admin() {
+                    let user: User = claims.into();
+
+                    if user.is_admin() {
                         return original_response;
                     }
                 }
@@ -90,12 +95,4 @@ async fn set_response_cache(
         },
         None => response,
     }
-}
-
-fn get_bearer_token<B>(request: &Request<B>) -> Option<String> {
-    let authorization_header = request.headers().get(header::AUTHORIZATION)?;
-    let bearer_token = authorization_header.to_str().ok()?;
-    let bearer_token = bearer_token.trim_start_matches("Bearer ");
-
-    Some(bearer_token.to_string())
 }
