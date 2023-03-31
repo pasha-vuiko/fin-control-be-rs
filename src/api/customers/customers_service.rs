@@ -19,26 +19,18 @@ impl CustomersService {
         }
     }
 
-    pub async fn find_one_as_admin(&self, id: &str) -> Result<CustomerEntity, AppError> {
+    pub async fn find_one_by_id(&self, id: &str) -> Result<CustomerEntity, AppError> {
         let customer_from_db = self.customers_repository.find_one(id).await?;
         let customer_entity = customer_from_db.into();
 
         Ok(customer_entity)
     }
 
-    pub async fn find_one_as_customer(
-        &self,
-        id: &str,
-        user_id: &str,
-    ) -> Result<CustomerEntity, AppError> {
-        let customer_from_db = self.customers_repository.find_one(id).await?;
-
-        if customer_from_db.user_id != user_id {
-            return Err(AppError::NotFound {
-                message: "'The customer was not found'".into(),
-            });
-        }
-
+    pub async fn find_one_by_user_id(&self, user_id: &str) -> Result<CustomerEntity, AppError> {
+        let customer_from_db = self
+            .customers_repository
+            .find_one_by_user_id(user_id)
+            .await?;
         let customer_entity = customer_from_db.into();
 
         Ok(customer_entity)
