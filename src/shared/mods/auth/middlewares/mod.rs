@@ -18,9 +18,9 @@ impl AuthLayer {
     }
 
     pub fn verify(&self, required_roles: Vec<Roles>) -> ValidateRequestHeaderLayer<AuthVerify> {
-        let inner_service = AuthVerify::new(self.auth_service.clone(), required_roles);
+        let auth_verifier = AuthVerify::new(self.auth_service.clone(), required_roles);
 
-        ValidateRequestHeaderLayer::custom(inner_service)
+        ValidateRequestHeaderLayer::custom(auth_verifier)
     }
 }
 
@@ -56,7 +56,7 @@ impl<B> ValidateRequest<B> for AuthVerify {
                     Ok(user_claims) => {
                         let user: User = user_claims.into();
 
-                        req.extensions_mut().insert(Some(user));
+                        req.extensions_mut().insert(user);
 
                         Ok(())
                     }
