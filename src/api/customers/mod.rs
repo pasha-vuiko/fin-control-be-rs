@@ -38,32 +38,33 @@ pub fn get_router(
     let cache_layer = from_fn_with_state(api_state.clone(), json_cache);
 
     let routes = Router::new()
-        // Find one
+        .route(
+            "/self",
+            get(customers_handlers::find_one_by_user_id)
+                .layer(auth_layer.verify(vec![Roles::Customer]))
+                .layer(cache_layer.clone()),
+        )
         .route(
             "/:id",
             get(customers_handlers::find_one)
-                .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer]))
+                .layer(auth_layer.verify(vec![Roles::Admin]))
                 .layer(cache_layer.clone()),
         )
-        // Find many
         .route(
             "/",
             get(customers_handlers::find_many)
                 .layer(auth_layer.verify(vec![Roles::Admin]))
                 .layer(cache_layer),
         )
-        // Create
         .route(
             "/",
             post(customers_handlers::create).layer(auth_layer.verify(vec![Roles::Customer])),
         )
-        // Update
         .route(
             "/:id",
             patch(customers_handlers::update)
                 .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
         )
-        // Remove
         .route(
             "/:id",
             delete(customers_handlers::remove)

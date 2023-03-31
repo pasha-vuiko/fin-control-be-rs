@@ -9,6 +9,8 @@ use crate::shared::errors::app_error::AppError;
 pub trait CustomersRepositoryTrait {
     async fn find_one(&self, id: &str) -> Result<CustomerFromDb, AppError>;
 
+    async fn find_one_by_user_id(&self, user_id: &str) -> Result<CustomerFromDb, AppError>;
+
     async fn find_many(&self) -> Result<Vec<CustomerFromDb>, AppError>;
 
     async fn create(&self, create_dto: CreateCustomerDbDto) -> Result<CustomerFromDb, AppError>;

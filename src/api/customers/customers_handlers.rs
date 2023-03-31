@@ -11,17 +11,19 @@ use crate::shared::errors::app_error::AppError;
 use crate::shared::mods::auth::structs::user::User;
 
 pub async fn find_one(
-    Extension(user): Extension<User>,
     Path(customer_id): Path<String>,
     State(customers_service): State<Arc<CustomersService>>,
 ) -> Result<CustomerEntityJson, AppError> {
-    let found_customer = if user.is_admin() {
-        customers_service.find_one_as_admin(&customer_id).await?
-    } else {
-        customers_service
-            .find_one_as_customer(&customer_id, &user.id)
-            .await?
-    };
+    let found_customer = customers_service.find_one_by_id(&customer_id).await?;
+
+    Ok(found_customer.into())
+}
+
+pub async fn find_one_by_user_id(
+    Extension(user): Extension<User>,
+    State(customers_service): State<Arc<CustomersService>>,
+) -> Result<CustomerEntityJson, AppError> {
+    let found_customer = customers_service.find_one_by_user_id(&user.id).await?;
 
     Ok(found_customer.into())
 }

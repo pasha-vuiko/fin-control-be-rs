@@ -66,6 +66,22 @@ impl CustomersRepositoryTrait for CustomerRepository {
         }
     }
 
+    async fn find_one_by_user_id(&self, user_id: &str) -> Result<CustomerFromDb, AppError> {
+        let customer_from_prisma_option = self
+            .prisma_client
+            .customer()
+            .find_unique(customer::user_id::equals(user_id.into()))
+            .exec()
+            .await?;
+
+        match customer_from_prisma_option {
+            Some(customer) => Ok(customer.into()),
+            None => Err(AppError::NotFound {
+                message: format!("Customer with user_id '{}' was not found", user_id),
+            }),
+        }
+    }
+
     async fn find_many(&self) -> Result<Vec<CustomerFromDb>, AppError> {
         let customers_from_prisma = self
             .prisma_client
