@@ -8,6 +8,7 @@ use crate::shared::mods::prisma::PrismaClient;
 use crate::shared::mods::redis::redis_service::RedisService;
 
 mod customers;
+mod expenses;
 
 pub async fn get_api_router(
     prisma_client: Arc<PrismaClient>,
@@ -17,6 +18,11 @@ pub async fn get_api_router(
     Router::new()
         .route("/", get(index))
         .merge(customers::get_router(
+            prisma_client.clone(),
+            redis_service.clone(),
+            auth_service.clone(),
+        ))
+        .merge(expenses::get_router(
             prisma_client,
             redis_service,
             auth_service,

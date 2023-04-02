@@ -14,8 +14,8 @@ use crate::shared::mods::prisma::PrismaClient;
 use crate::shared::mods::redis::{middlewares::json_cache, redis_service::RedisService};
 
 mod customers_handlers;
-mod customers_repository;
-mod customers_service;
+pub mod customers_repository;
+pub mod customers_service;
 mod dto;
 mod entities;
 mod enums;
@@ -46,9 +46,7 @@ pub fn get_router(
         )
         .route(
             "/:id",
-            get(customers_handlers::find_one)
-                .layer(auth_layer.verify(vec![Roles::Admin]))
-                .layer(cache_layer.clone()),
+            get(customers_handlers::find_one).layer(auth_layer.verify(vec![Roles::Admin])),
         )
         .route(
             "/",

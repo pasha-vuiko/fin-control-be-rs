@@ -3,7 +3,9 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Sex {
+    #[serde(rename = "MALE")]
     Male,
+    #[serde(rename = "FEMALE")]
     Female,
 }
 
@@ -16,11 +18,11 @@ impl From<prisma::Sex> for Sex {
     }
 }
 
-impl Into<prisma::Sex> for Sex {
-    fn into(self) -> prisma::Sex {
-        match self {
-            Self::Male => prisma::Sex::Male,
-            Self::Female => prisma::Sex::Female,
+impl From<Sex> for prisma::Sex {
+    fn from(value: Sex) -> Self {
+        match value {
+            Sex::Male => prisma::Sex::Male,
+            Sex::Female => prisma::Sex::Female,
         }
     }
 }
