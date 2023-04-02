@@ -49,26 +49,29 @@ pub fn get_router(
         .route(
             "/",
             get(expenses_handlers::find_many)
-                .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer]))
-                .layer(cache_layer.clone()),
+                .route_layer(cache_layer.clone())
+                .route_layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
         )
         .route(
             "/:id",
             get(expenses_handlers::find_one)
-                .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer]))
-                .layer(cache_layer),
+                .route_layer(cache_layer)
+                .route_layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
         )
         .route(
             "/",
-            post(expenses_handlers::create_many).layer(auth_layer.verify(vec![Roles::Customer])),
+            post(expenses_handlers::create_many)
+                .route_layer(auth_layer.verify(vec![Roles::Customer])),
         )
         .route(
             "/:id",
-            patch(expenses_handlers::update_one).layer(auth_layer.verify(vec![Roles::Customer])),
+            patch(expenses_handlers::update_one)
+                .route_layer(auth_layer.verify(vec![Roles::Customer])),
         )
         .route(
             "/:id",
-            delete(expenses_handlers::delete_one).layer(auth_layer.verify(vec![Roles::Customer])),
+            delete(expenses_handlers::delete_one)
+                .route_layer(auth_layer.verify(vec![Roles::Customer])),
         );
 
     Router::new()
