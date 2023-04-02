@@ -2431,7 +2431,7 @@ pub mod expense {
         #[serde(rename = "customerId")]
         pub customer_id: String,
         #[serde(rename = "amount")]
-        pub amount: f64,
+        pub amount: String,
         #[serde(rename = "date")]
         pub date: ::prisma_client_rust::chrono::DateTime<::prisma_client_rust::chrono::FixedOffset>,
         #[serde(rename = "category")]
