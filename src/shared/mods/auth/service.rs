@@ -27,7 +27,7 @@ impl AuthService {
 
     pub fn check_user_roles(required_roles: &[Roles], user: &User) -> Result<bool, AppError> {
         let user_roles = user.roles.clone();
-        let roles_match = Self::check_roles_match(&required_roles, &user_roles);
+        let roles_match = Self::check_roles_match(required_roles, &user_roles);
 
         if roles_match {
             Ok(true)
