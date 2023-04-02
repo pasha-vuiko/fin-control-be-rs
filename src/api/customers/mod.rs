@@ -41,32 +41,32 @@ pub fn get_router(
         .route(
             "/self",
             get(customers_handlers::find_one_by_user_id)
-                .layer(auth_layer.verify(vec![Roles::Customer]))
-                .layer(cache_layer.clone()),
+                .route_layer(cache_layer.clone())
+                .route_layer(auth_layer.verify(vec![Roles::Customer])),
         )
         .route(
             "/:id",
-            get(customers_handlers::find_one).layer(auth_layer.verify(vec![Roles::Admin])),
+            get(customers_handlers::find_one).route_layer(auth_layer.verify(vec![Roles::Admin])),
         )
         .route(
             "/",
             get(customers_handlers::find_many)
-                .layer(auth_layer.verify(vec![Roles::Admin]))
-                .layer(cache_layer),
+                .route_layer(cache_layer)
+                .route_layer(auth_layer.verify(vec![Roles::Admin])),
         )
         .route(
             "/",
-            post(customers_handlers::create).layer(auth_layer.verify(vec![Roles::Customer])),
+            post(customers_handlers::create).route_layer(auth_layer.verify(vec![Roles::Customer])),
         )
         .route(
             "/:id",
             patch(customers_handlers::update)
-                .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
+                .route_layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
         )
         .route(
             "/:id",
             delete(customers_handlers::remove)
-                .layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
+                .route_layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
         );
 
     Router::new()
