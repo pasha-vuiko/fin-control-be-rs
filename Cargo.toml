@@ -12,13 +12,13 @@ resolver = "2"
 
 [dependencies]
 axum = { version = "0.6.12", features = ["headers"] }
-tokio = { version = "1.26", features = ["full"] }
+tokio = { version = "1.27", features = ["full"] }
 tower = "0.4.13"
 tower-http = { version = "0.4.0", features = ["trace", "auth"] }
 
 # Serialization/Deserialization
-serde_json = "1.0.94"
-serde = { version = "1.0.158", features = ["derive"] }
+serde_json = "1.0.95"
+serde = { version = "1.0.159", features = ["derive"] }
 
 # Config
 dotenv = "0.15.0"
@@ -32,10 +32,10 @@ axum-auth = "0.4.0"
 alcoholic_jwt = "4091.0.0"
 
 # Database ORM
-prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.6", default-features = false, features = ["migrations", "postgresql"] }
+prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.7", default-features = false, features = ["migrations", "postgresql"] }
 
 # Requests
-reqwest = { version = "0.11.15", features = ["json"] }
+reqwest = { version = "0.11.16", features = ["json"] }
 
 # Redis
 redis = { version = "0.22.3", features = ["tokio-comp", "connection-manager"] }
@@ -52,4 +52,4 @@ derive_more = "0.99.17"
 chrono = "0.4.24" # Working with dates
 async-trait = "0.1.68"
 base64 = "0.21.0"
-futures-util = "0.3.27"
+futures-util = "0.3.28"
