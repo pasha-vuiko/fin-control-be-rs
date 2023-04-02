@@ -18,34 +18,6 @@ impl CustomerRepository {
     pub fn new(prisma_client: Arc<PrismaClient>) -> Self {
         Self { prisma_client }
     }
-
-    fn map_update_dto_to_prisma_update_vec(
-        update_dto: UpdateCustomerDbDto,
-    ) -> Vec<customer::SetParam> {
-        let mut update_values: Vec<customer::SetParam> = vec![];
-
-        if let Some(auth_0_id) = update_dto.user_id {
-            update_values.push(customer::user_id::set(auth_0_id));
-        }
-        if let Some(first_name) = update_dto.first_name {
-            update_values.push(customer::first_name::set(first_name));
-        }
-        if let Some(last_name) = update_dto.last_name {
-            update_values.push(customer::last_name::set(last_name));
-        }
-        if let Some(email) = update_dto.email {
-            update_values.push(customer::email::set(email));
-        }
-        if let Some(birthdate) = update_dto.birthdate {
-            update_values.push(customer::birthdate::set(birthdate));
-        }
-        if let Some(sex) = update_dto.sex {
-            update_values.push(customer::sex::set(sex.into()))
-        }
-        update_values.push(customer::phone::set(update_dto.phone));
-
-        update_values
-    }
 }
 
 #[async_trait]
@@ -122,12 +94,10 @@ impl CustomersRepositoryTrait for CustomerRepository {
         id: &str,
         update_dto: UpdateCustomerDbDto,
     ) -> Result<CustomerFromDb, AppError> {
-        let update_values = CustomerRepository::map_update_dto_to_prisma_update_vec(update_dto);
-
         let updated_customer_from_prisma = self
             .prisma_client
             .customer()
-            .update(customer::id::equals(id.into()), update_values)
+            .update(customer::id::equals(id.into()), update_dto.into())
             .exec()
             .await?;
 
