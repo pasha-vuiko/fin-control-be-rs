@@ -62,18 +62,23 @@ impl AuthService {
     }
 
     fn check_roles_match(required_roles: &[Roles], user_roles: &[Roles]) -> bool {
-        for required_role in required_roles {
-            if !user_roles.contains(required_role) {
-                tracing::debug!(
-                    "User does not have required role: {:?}, user roles: {:?}",
-                    required_role,
-                    user_roles
-                );
+        if required_roles.is_empty() {
+            return true;
+        }
 
-                return false;
+        for required_role in required_roles {
+            if user_roles.contains(required_role) {
+                return true;
             }
         }
-        true
+
+        tracing::debug!(
+            "User does not have one of required roles: {:?}, user roles: {:?}",
+            required_roles,
+            user_roles
+        );
+
+        false
     }
 
     fn validate_token(&self, token: &str) -> Result<UserJwtClaims, AppError> {
