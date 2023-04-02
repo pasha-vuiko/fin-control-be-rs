@@ -35,8 +35,6 @@ async fn main() {
         .expect("Failed to generate auth service");
 
     // TODO Add pagination for APIs
-    // TODO Add expenses API
-    // TODO Find out if Arcs are needed for DI
     let api_router = get_api_router(
         Arc::new(prisma_client),
         Arc::new(redis_service),

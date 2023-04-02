@@ -19,7 +19,7 @@ impl From<expense::Data> for ExpenseFromDb {
         Self {
             id: value.id,
             customer_id: value.customer_id,
-            amount: value.amount,
+            amount: value.amount.parse().unwrap(), // TODO handle error
             date: value.date,
             category: value.category.into(),
             created_at: value.created_at,
