@@ -10,13 +10,13 @@ use crate::shared::mods::redis::redis_service::RedisService;
 mod customers;
 mod expenses;
 
-pub async fn get_api_router(
+pub async fn get_router(
     prisma_client: Arc<PrismaClient>,
     redis_service: Arc<RedisService>,
     auth_service: Arc<AuthService>,
 ) -> Router {
     Router::new()
-        .route("/", get(index))
+        .route("/", get(root_handler))
         .merge(customers::get_router(
             prisma_client.clone(),
             redis_service.clone(),
@@ -29,7 +29,7 @@ pub async fn get_api_router(
         ))
 }
 
-async fn index() -> Result<String, AppError> {
+async fn root_handler() -> Result<String, AppError> {
     let app_ver = env::var("CARGO_PKG_VERSION");
 
     match app_ver {
