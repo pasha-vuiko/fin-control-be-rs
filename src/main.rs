@@ -4,7 +4,6 @@ use std::{env, net::SocketAddr, sync::Arc};
 use tower_request_id::RequestIdLayer;
 
 mod api;
-use crate::api::get_api_router;
 use crate::shared::config::AppConfig;
 
 mod shared;
@@ -35,7 +34,7 @@ async fn main() {
         .expect("Failed to generate auth service");
 
     // TODO Add pagination for APIs
-    let api_router = get_api_router(
+    let api_router = api::get_router(
         Arc::new(prisma_client),
         Arc::new(redis_service),
         Arc::new(auth_service),
