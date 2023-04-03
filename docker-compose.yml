@@ -1,21 +1,6 @@
 version: '3.4'
 
 services:
-#  fin-control-be-rs:
-#    build:
-#      context: .
-#      dockerfile: Dockerfile
-#    env_file:
-#      - local-docker.env
-#    volumes:
-#      - /src:/app/src
-#    ports:
-#      - '3001:3000'
-#    depends_on:
-#      - redis
-#      - postgres
-#
-
   redis:
     image: redis:latest
     ports:
