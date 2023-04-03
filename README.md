@@ -6,6 +6,7 @@ Back-end for FinControl App
 
 Tech Stack:
 * [Axum](https://github.com/tokio-rs/axum) as a freamwork
+* [Auth0](https://auth0.com) as authorization service
 * [Prisma](https://github.com/Brendonovich/prisma-client-rust) as an ORM
 * [CockroachDB](https://www.cockroachlabs.com) as a primary DB
 * [Redis](https://redis.com) as DB for caching
