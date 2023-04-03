@@ -2,7 +2,7 @@
 
 ## Description
 
-Back-end for FinControl App
+Back-end written with Rust for FinControl App
 
 Tech Stack:
 * [Axum](https://github.com/tokio-rs/axum) as a freamwork
