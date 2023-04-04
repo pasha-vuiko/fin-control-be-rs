@@ -20,6 +20,10 @@ Tech Stack:
 
 ## Running the app in DEV mode
 
+Create `.env` file in the root of the project with the content from `.env.example` file.
+
+```bash
+
 Run this commands to prepare the project:
 
 ```bash
