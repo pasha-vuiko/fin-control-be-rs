@@ -1,8 +1,9 @@
+use axum::extract::FromRef;
+use std::sync::Arc;
+
 use crate::api::expenses::expenses_service::ExpensesService;
 use crate::shared::mods::auth::service::AuthService;
 use crate::shared::mods::redis::redis_service::RedisService;
-use std::sync::Arc;
-use axum::extract::FromRef;
 
 #[derive(Clone)]
 pub struct ExpensesApiState {

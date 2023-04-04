@@ -1,6 +1,7 @@
-use crate::shared::errors::app_error::AppError;
 use redis::{aio::ConnectionManager, AsyncCommands, RedisResult, Value};
 use std::future::Future;
+
+use crate::shared::errors::app_error::AppError;
 
 #[derive(Clone)]
 pub struct RedisService {

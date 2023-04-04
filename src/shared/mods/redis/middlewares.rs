@@ -1,5 +1,3 @@
-use crate::shared::mods::auth::service::AuthService;
-use crate::shared::mods::auth::structs::user::User;
 use axum::body::HttpBody;
 use axum::extract::{OriginalUri, State};
 use axum::http::{header, Method, Request};
@@ -8,6 +6,8 @@ use axum::response::{IntoResponse, Response};
 use std::ops::Deref;
 use std::sync::Arc;
 
+use crate::shared::mods::auth::service::AuthService;
+use crate::shared::mods::auth::structs::user::User;
 use crate::shared::mods::redis::redis_service::RedisService;
 use crate::shared::utils::get_bearer_token;
 

@@ -1,8 +1,8 @@
+use async_trait::async_trait;
+
 use crate::api::expenses::dto::create_expense_db_dto::CreateExpenseDbDto;
 use crate::api::expenses::dto::find_expenses_dto::FindExpensesDto;
 use crate::api::expenses::dto::update_expense_db_dto::UpdateExpenseDbDto;
-use async_trait::async_trait;
-
 use crate::api::expenses::structs::expense_from_db::ExpenseFromDb;
 use crate::shared::errors::app_error::AppError;
 

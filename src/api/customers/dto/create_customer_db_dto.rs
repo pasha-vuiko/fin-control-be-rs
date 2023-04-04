@@ -1,6 +1,7 @@
-use crate::api::customers::enums::sex::Sex;
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
+
+use crate::api::customers::enums::sex::Sex;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CreateCustomerDbDto {

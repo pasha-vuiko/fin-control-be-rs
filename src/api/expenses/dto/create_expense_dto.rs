@@ -1,6 +1,7 @@
-use crate::api::expenses::enums::expense_category::ExpenseCategory;
 use serde::{Deserialize, Serialize};
 use validator::Validate;
+
+use crate::api::expenses::enums::expense_category::ExpenseCategory;
 
 #[derive(Debug, Deserialize, Serialize, Validate)]
 #[serde(rename_all = "camelCase")]

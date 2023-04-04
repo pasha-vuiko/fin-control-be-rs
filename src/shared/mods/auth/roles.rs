@@ -1,5 +1,6 @@
-use crate::shared::errors::app_error::AppError;
 use serde::{Deserialize, Deserializer, Serialize};
+
+use crate::shared::errors::app_error::AppError;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum Roles {

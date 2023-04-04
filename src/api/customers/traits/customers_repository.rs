@@ -1,6 +1,6 @@
-use crate::api::customers::dto::create_customer_db_dto::CreateCustomerDbDto;
 use async_trait::async_trait;
 
+use crate::api::customers::dto::create_customer_db_dto::CreateCustomerDbDto;
 use crate::api::customers::dto::update_customer_db_dto::UpdateCustomerDbDto;
 use crate::api::customers::structs::customer_from_db::CustomerFromDb;
 use crate::shared::errors::app_error::AppError;

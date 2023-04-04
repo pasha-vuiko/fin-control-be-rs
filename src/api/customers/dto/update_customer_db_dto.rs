@@ -1,7 +1,8 @@
-use crate::api::customers::enums::sex::Sex;
-use crate::shared::mods::prisma::customer;
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
+
+use crate::api::customers::enums::sex::Sex;
+use crate::shared::mods::prisma::customer;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateCustomerDbDto {

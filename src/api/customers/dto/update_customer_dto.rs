@@ -1,7 +1,8 @@
-use crate::api::customers::enums::sex::Sex;
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 use validator::Validate;
+
+use crate::api::customers::enums::sex::Sex;
 
 #[derive(Debug, Deserialize, Serialize, Validate)]
 #[serde(rename_all = "camelCase")]

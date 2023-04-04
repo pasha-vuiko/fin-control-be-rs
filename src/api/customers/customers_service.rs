@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::api::customers::dto::create_customer_db_dto::CreateCustomerDbDto;
 use crate::api::customers::dto::update_customer_db_dto::UpdateCustomerDbDto;
 use crate::api::customers::{
@@ -6,7 +8,6 @@ use crate::api::customers::{
     traits::customers_repository::CustomersRepositoryTrait,
 };
 use crate::shared::errors::app_error::AppError;
-use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct CustomersService {

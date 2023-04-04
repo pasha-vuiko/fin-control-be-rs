@@ -1,6 +1,7 @@
-use crate::shared::mods::auth::roles::Roles;
 use chrono::FixedOffset;
 use serde::Deserialize;
+
+use crate::shared::mods::auth::roles::Roles;
 
 #[derive(Debug, Deserialize, Clone)]
 pub struct UserJwtClaims {

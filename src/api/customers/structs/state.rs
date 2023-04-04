@@ -1,8 +1,9 @@
+use axum::extract::FromRef;
+use std::sync::Arc;
+
 use crate::api::customers::customers_service::CustomersService;
 use crate::shared::mods::auth::service::AuthService;
 use crate::shared::mods::redis::redis_service::RedisService;
-use axum::extract::FromRef;
-use std::sync::Arc;
 
 #[derive(Clone)]
 pub struct CustomersApiState {

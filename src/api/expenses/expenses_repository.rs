@@ -1,3 +1,7 @@
+use async_trait::async_trait;
+use prisma_client_rust::Direction;
+use std::sync::Arc;
+
 use crate::api::expenses::dto::create_expense_db_dto::CreateExpenseDbDto;
 use crate::api::expenses::dto::find_expenses_dto::FindExpensesDto;
 use crate::api::expenses::dto::update_expense_db_dto::UpdateExpenseDbDto;
@@ -5,9 +9,6 @@ use crate::api::expenses::structs::expense_from_db::ExpenseFromDb;
 use crate::api::expenses::traits::expenses_repository::ExpensesRepositoryTrait;
 use crate::shared::errors::app_error::AppError;
 use crate::shared::mods::prisma::{expense, PrismaClient};
-use async_trait::async_trait;
-use prisma_client_rust::Direction;
-use std::sync::Arc;
 
 pub struct ExpensesRepository {
     prisma_client: Arc<PrismaClient>,

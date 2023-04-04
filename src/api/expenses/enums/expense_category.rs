@@ -1,5 +1,6 @@
-use crate::shared::mods::prisma;
 use serde::{Deserialize, Serialize};
+
+use crate::shared::mods::prisma;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum ExpenseCategory {
