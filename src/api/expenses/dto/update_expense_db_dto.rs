@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::api::expenses::dto::update_expense_dto::UpdateExpenseDto;
 use crate::api::expenses::enums::expense_category::ExpenseCategory;
-use crate::shared::mods::prisma::expense;
+use crate::prisma::expense;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateExpenseDbDto {

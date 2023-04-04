@@ -7,8 +7,8 @@ use crate::api::expenses::dto::find_expenses_dto::FindExpensesDto;
 use crate::api::expenses::dto::update_expense_db_dto::UpdateExpenseDbDto;
 use crate::api::expenses::structs::expense_from_db::ExpenseFromDb;
 use crate::api::expenses::traits::expenses_repository::ExpensesRepositoryTrait;
+use crate::prisma::{expense, PrismaClient};
 use crate::shared::errors::app_error::AppError;
-use crate::shared::mods::prisma::{expense, PrismaClient};
 
 pub struct ExpensesRepository {
     prisma_client: Arc<PrismaClient>,

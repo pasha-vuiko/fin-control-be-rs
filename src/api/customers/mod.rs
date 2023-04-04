@@ -9,8 +9,8 @@ use std::sync::Arc;
 use crate::api::customers::{
     customers_service::CustomersService, structs::state::CustomersApiState,
 };
+use crate::prisma::PrismaClient;
 use crate::shared::mods::auth::{middlewares::AuthLayer, roles::Roles, service::AuthService};
-use crate::shared::mods::prisma::PrismaClient;
 use crate::shared::mods::redis::{middlewares::json_cache, redis_service::RedisService};
 
 mod customers_handlers;

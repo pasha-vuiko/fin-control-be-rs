@@ -3,6 +3,8 @@ use dotenv::dotenv;
 use std::{env, net::SocketAddr, sync::Arc};
 use tower_request_id::RequestIdLayer;
 
+mod prisma;
+
 mod api;
 use crate::shared::config::AppConfig;
 
@@ -10,7 +12,6 @@ mod shared;
 use crate::shared::config::tracing::{get_tracing_layer, init_tracing};
 use crate::shared::handlers::handle_404_resource;
 use crate::shared::mods::auth::service::AuthService;
-use crate::shared::mods::prisma;
 use crate::shared::mods::redis::get_redis_service;
 
 #[tokio::main]

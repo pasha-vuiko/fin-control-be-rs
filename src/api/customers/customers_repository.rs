@@ -6,8 +6,8 @@ use crate::api::customers::dto::update_customer_db_dto::UpdateCustomerDbDto;
 use crate::api::customers::structs::customer_from_db::CustomerFromDb;
 use crate::api::customers::traits::customers_repository::CustomersRepositoryTrait;
 
+use crate::prisma::{customer, PrismaClient};
 use crate::shared::errors::app_error::AppError;
-use crate::shared::mods::prisma::{customer, PrismaClient};
 
 #[derive(Clone)]
 pub struct CustomerRepository {
