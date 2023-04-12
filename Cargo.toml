@@ -28,7 +28,6 @@ envy = "0.4"
 validator = { version = "0.16.0", features = ["derive", "phone"] }
 
 # Authentication
-axum-auth = "0.4.0"
 alcoholic_jwt = "4091.0.0"
 
 # Database ORM

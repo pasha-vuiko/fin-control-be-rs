@@ -99,7 +99,8 @@ where
         let bearer_token = get_bearer_token(&request);
         let is_admin = self.is_admin(bearer_token);
 
-        let mut inner = self.inner.clone();
+        let clone = self.inner.clone();
+        let mut inner = std::mem::replace(&mut self.inner, clone);
         let cache_service = self.cache_service.clone();
 
         Box::pin(async move {

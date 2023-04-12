@@ -12,7 +12,7 @@ use crate::prisma::PrismaClient;
 use crate::shared::mods::auth::enums::roles::Roles;
 use crate::shared::mods::auth::middlewares::role_based_bearer_auth::AuthLayer;
 use crate::shared::mods::auth::services::auth0::Auth0Service;
-use crate::shared::mods::cache::moddlewares::cache::JsonCacheLayer;
+use crate::shared::mods::cache::moddlewares::json_cache::JsonCacheLayer;
 use crate::shared::mods::redis::redis_service::RedisService;
 
 mod dto;
