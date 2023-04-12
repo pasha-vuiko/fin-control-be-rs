@@ -1,7 +1,6 @@
 use crate::shared::config::AppConfig;
 use crate::shared::mods::redis::redis_service::RedisService;
 
-pub mod middlewares;
 pub mod redis_service;
 
 pub async fn get_redis_service(config: &AppConfig) -> RedisService {

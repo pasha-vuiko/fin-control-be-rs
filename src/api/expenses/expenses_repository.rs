@@ -32,9 +32,10 @@ impl ExpensesRepositoryTrait for ExpensesRepository {
 
         match found_expense {
             Some(expense) => Ok(ExpenseFromDb::from(expense)),
-            None => Err(AppError::NotFound {
-                message: format!("Expense with id {} not found", id),
-            }),
+            None => Err(AppError::NotFound(format!(
+                "Expense with id {} not found",
+                id
+            ))),
         }
     }
 

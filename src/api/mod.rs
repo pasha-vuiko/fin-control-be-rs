@@ -4,7 +4,7 @@ use std::{env, sync::Arc};
 
 use crate::prisma::PrismaClient;
 use crate::shared::errors::app_error::AppError;
-use crate::shared::mods::auth::service::AuthService;
+use crate::shared::mods::auth::services::auth0::Auth0Service;
 use crate::shared::mods::redis::redis_service::RedisService;
 
 mod customers;
@@ -13,7 +13,7 @@ mod expenses;
 pub async fn get_router(
     prisma_client: Arc<PrismaClient>,
     redis_service: Arc<RedisService>,
-    auth_service: Arc<AuthService>,
+    auth_service: Arc<Auth0Service>,
 ) -> Router {
     Router::new()
         .route("/", get(root_handler))
@@ -34,8 +34,9 @@ async fn root_handler() -> Result<String, AppError> {
 
     match app_ver {
         Ok(app_ver) => Ok(format!("App version: {}", app_ver)),
-        Err(err) => Err(AppError::Internal {
-            message: format!("Failed to get App Version: {}", err),
-        }),
+        Err(err) => Err(AppError::Internal(format!(
+            "Failed to get App Version: {}",
+            err
+        ))),
     }
 }

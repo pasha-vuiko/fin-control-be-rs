@@ -1,10 +1,9 @@
+use crate::shared::mods::auth::enums::roles::Roles;
 use chrono::FixedOffset;
 use serde::Deserialize;
 
-use crate::shared::mods::auth::roles::Roles;
-
 #[derive(Debug, Deserialize, Clone)]
-pub struct UserJwtClaims {
+pub struct Auth0JwtClaims {
     pub given_name: Option<String>,
     pub family_name: Option<String>,
     pub nickname: String,

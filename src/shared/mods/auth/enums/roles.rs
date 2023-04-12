@@ -15,9 +15,10 @@ impl TryFrom<String> for Roles {
         match value.as_str() {
             "admin" | "ADMIN" | "Admin" => Ok(Roles::Admin),
             "customer" | "CUSTOMER" | "Customer" => Ok(Roles::Customer),
-            _ => Err(AppError::Internal {
-                message: format!("Role '{}' is not supported", value),
-            }),
+            _ => Err(AppError::Internal(format!(
+                "Role '{}' is not supported",
+                value
+            ))),
         }
     }
 }

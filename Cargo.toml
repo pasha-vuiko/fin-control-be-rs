@@ -11,14 +11,14 @@ members = [
 ]
 
 [dependencies]
-axum = { version = "0.6.12", features = ["headers"] }
+axum = { version = "0.6.15", features = ["headers"] }
 tokio = { version = "1.27", features = ["full"] }
 tower = "0.4.13"
 tower-http = { version = "0.4.0", features = ["trace", "auth"] }
 
 # Serialization/Deserialization
 serde_json = "1.0.95"
-serde = { version = "1.0.159", features = ["derive"] }
+serde = { version = "1.0.160", features = ["derive"] }
 
 # Config
 dotenv = "0.15.0"
@@ -38,7 +38,7 @@ prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust
 reqwest = { version = "0.11.16", features = ["json"] }
 
 # Redis
-redis = { version = "0.22.3", features = ["tokio-comp", "connection-manager"] }
+redis = { version = "0.23.0", features = ["tokio-comp", "connection-manager"] }
 
 # Logger
 tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
@@ -46,7 +46,7 @@ tracing = "0.1"
 tower-request-id = "0.2.1"
 
 # Error handling
-derive_more = "0.99.17"
+thiserror = "1.0.40"
 
 # Util crates
 chrono = "0.4.24" # Working with dates

@@ -1,6 +1,5 @@
 use crate::api::customers::customers_repository::CustomerRepository;
 use axum::{
-    middleware::from_fn_with_state,
     routing::{delete, get, patch, post},
     Router,
 };
@@ -10,8 +9,11 @@ use crate::api::customers::{
     customers_service::CustomersService, structs::state::CustomersApiState,
 };
 use crate::prisma::PrismaClient;
-use crate::shared::mods::auth::{middlewares::AuthLayer, roles::Roles, service::AuthService};
-use crate::shared::mods::redis::{middlewares::json_cache, redis_service::RedisService};
+use crate::shared::mods::auth::enums::roles::Roles;
+use crate::shared::mods::auth::middlewares::role_based_bearer_auth::AuthLayer;
+use crate::shared::mods::auth::services::auth0::Auth0Service;
+use crate::shared::mods::cache::moddlewares::cache::JsonCacheLayer;
+use crate::shared::mods::redis::redis_service::RedisService;
 
 mod customers_handlers;
 pub mod customers_repository;
@@ -25,17 +27,13 @@ mod traits;
 pub fn get_router(
     prisma_client: Arc<PrismaClient>,
     redis_service: Arc<RedisService>,
-    auth_service: Arc<AuthService>,
+    auth_service: Arc<Auth0Service>,
 ) -> Router {
     let customers_repository = Arc::new(CustomerRepository::new(prisma_client));
     let customers_service = Arc::new(CustomersService::new(customers_repository));
-    let api_state = CustomersApiState {
-        redis_service,
-        customers_service,
-        auth_service: auth_service.clone(),
-    };
-    let auth_layer = AuthLayer::new(auth_service);
-    let cache_layer = from_fn_with_state(api_state.clone(), json_cache);
+    let api_state = CustomersApiState { customers_service };
+    let auth_layer = AuthLayer::new(auth_service.clone());
+    let cache_layer = JsonCacheLayer::new(redis_service, auth_service);
 
     let routes = Router::new()
         .route(

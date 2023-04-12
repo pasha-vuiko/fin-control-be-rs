@@ -1,3 +1,4 @@
+use futures_util::future::try_join;
 use std::sync::Arc;
 
 use crate::api::customers::customers_service::CustomersService;
@@ -38,13 +39,17 @@ impl ExpensesService {
         id: &str,
         user_id: &str,
     ) -> Result<ExpenseEntity, AppError> {
-        let customer = self.customers_service.find_one_by_user_id(user_id).await?;
-        let expense_from_db = self.expenses_repository.find_one(id).await?;
+        let (customer, expense_from_db) = try_join(
+            self.customers_service.find_one_by_user_id(user_id),
+            self.expenses_repository.find_one(id),
+        )
+        .await?;
 
         if expense_from_db.customer_id != customer.id {
-            return Err(AppError::NotFound {
-                message: format!("Expense with id {} not found", id),
-            });
+            return Err(AppError::NotFound(format!(
+                "Expense with id {} not found",
+                id
+            )));
         }
 
         let expense_entity = expense_from_db.into();

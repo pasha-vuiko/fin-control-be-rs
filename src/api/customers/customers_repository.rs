@@ -32,9 +32,10 @@ impl CustomersRepositoryTrait for CustomerRepository {
 
         match customer_from_prisma_option {
             Some(customer) => Ok(customer.into()),
-            None => Err(AppError::NotFound {
-                message: format!("Customer with id '{}' was not found", id),
-            }),
+            None => Err(AppError::NotFound(format!(
+                "Customer with id '{}' was not found",
+                id
+            ))),
         }
     }
 
@@ -48,9 +49,10 @@ impl CustomersRepositoryTrait for CustomerRepository {
 
         match customer_from_prisma_option {
             Some(customer) => Ok(customer.into()),
-            None => Err(AppError::NotFound {
-                message: format!("Customer with user_id '{}' was not found", user_id),
-            }),
+            None => Err(AppError::NotFound(format!(
+                "Customer with user_id '{}' was not found",
+                user_id
+            ))),
         }
     }
 

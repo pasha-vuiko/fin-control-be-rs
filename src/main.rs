@@ -11,7 +11,7 @@ use crate::shared::config::AppConfig;
 mod shared;
 use crate::shared::config::tracing::{get_tracing_layer, init_tracing};
 use crate::shared::handlers::handle_404_resource;
-use crate::shared::mods::auth::service::AuthService;
+use crate::shared::mods::auth::services::auth0::Auth0Service;
 use crate::shared::mods::redis::get_redis_service;
 
 #[tokio::main]
@@ -30,7 +30,7 @@ async fn main() {
     // Redis Connection manager
     let redis_service = get_redis_service(&config).await;
     // Authentication
-    let auth_service = AuthService::from_auth_domain(&config.auth_auth0_domain)
+    let auth_service = Auth0Service::from_auth_domain(&config.auth_auth0_domain)
         .await
         .expect("Failed to generate auth service");
 

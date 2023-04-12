@@ -1,5 +1,5 @@
-use crate::shared::mods::auth::roles::Roles;
-use crate::shared::mods::auth::structs::claims::UserJwtClaims;
+use crate::shared::mods::auth::enums::roles::Roles;
+use crate::shared::mods::auth::structs::auth0_claims::Auth0JwtClaims;
 
 #[derive(Debug, Clone)]
 pub struct User {
@@ -16,8 +16,8 @@ impl User {
     }
 }
 
-impl From<UserJwtClaims> for User {
-    fn from(value: UserJwtClaims) -> Self {
+impl From<Auth0JwtClaims> for User {
+    fn from(value: Auth0JwtClaims) -> Self {
         Self {
             id: value.sub,
             name: value.name,

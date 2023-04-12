@@ -75,9 +75,7 @@ impl CustomersService {
         let found_customer = self.customers_repository.find_one(id).await?;
 
         if found_customer.user_id != user_id {
-            return Err(AppError::NotFound {
-                message: "'The customer was not found'".into(),
-            });
+            return Err(AppError::NotFound("The customer was not found".into()));
         }
 
         let update_db_dto = CustomersService::map_update_dto_to_update_db_dto(
@@ -124,9 +122,7 @@ impl CustomersService {
         let found_customer = self.customers_repository.find_one(id).await?;
 
         if found_customer.user_id != user_id {
-            return Err(AppError::NotFound {
-                message: "'The customer was not found'".into(),
-            });
+            return Err(AppError::NotFound("The customer was not found".into()));
         }
 
         let deleted_customer_from_db = self.customers_repository.delete(id).await?;
