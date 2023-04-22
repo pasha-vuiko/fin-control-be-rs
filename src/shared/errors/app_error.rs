@@ -5,11 +5,11 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
+use onlyerror::Error;
 use prisma_client_rust::QueryError;
 use serde::Serialize;
 use serde_json::json;
 use std::fmt::{Display, Formatter};
-use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum AppError {

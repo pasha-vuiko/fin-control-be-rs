@@ -116,9 +116,9 @@ checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
 name = "axum"
-version = "0.6.15"
+version = "0.6.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b32c5ea3aabaf4deb5f5ced2d688ec0844c881c9e6c696a8b769a05fc691e62"
+checksum = "113713495a32dd0ab52baf5c10044725aa3aec00b31beda84218e469029b72a3"
 dependencies = [
  "async-trait",
  "axum-core",
@@ -806,12 +806,12 @@ dependencies = [
  "dotenv",
  "envy",
  "futures-util",
+ "onlyerror",
  "prisma-client-rust",
  "redis",
  "reqwest",
  "serde",
  "serde_json",
- "thiserror",
  "tokio",
  "tower",
  "tower-http",
@@ -1727,6 +1727,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "myn"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f950af707b8005ae33bb0f0b20cb32b09750e7375085606dc45b2f2078a34e52"
+
+[[package]]
 name = "native-tls"
 version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1880,6 +1886,15 @@ name = "oncemutex"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "44d11de466f4a3006fe8a5e7ec84e93b79c70cb992ae0aa0eb631ad2df8abfe2"
+
+[[package]]
+name = "onlyerror"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d284330af99b57f2f2b389b023f28db5153a9271378d063f5a6a3f3e27b529f4"
+dependencies = [
+ "myn",
+]
 
 [[package]]
 name = "opaque-debug"
@@ -2232,8 +2247,8 @@ dependencies = [
 
 [[package]]
 name = "prisma-client-rust"
-version = "0.6.7"
-source = "git+https://github.com/Brendonovich/prisma-client-rust?tag=0.6.7#f71ad9122537c4ed29bf496a4a643947a5fe9aef"
+version = "0.6.8"
+source = "git+https://github.com/Brendonovich/prisma-client-rust?tag=0.6.8#51f0473b642b16bb78fe0f5f3235aeb56f89300d"
 dependencies = [
  "base64 0.13.1",
  "bigdecimal",
@@ -2266,8 +2281,8 @@ dependencies = [
 
 [[package]]
 name = "prisma-client-rust-cli"
-version = "0.6.7"
-source = "git+https://github.com/Brendonovich/prisma-client-rust?tag=0.6.7#f71ad9122537c4ed29bf496a4a643947a5fe9aef"
+version = "0.6.8"
+source = "git+https://github.com/Brendonovich/prisma-client-rust?tag=0.6.8#51f0473b642b16bb78fe0f5f3235aeb56f89300d"
 dependencies = [
  "directories",
  "flate2",
@@ -2286,8 +2301,8 @@ dependencies = [
 
 [[package]]
 name = "prisma-client-rust-macros"
-version = "0.6.7"
-source = "git+https://github.com/Brendonovich/prisma-client-rust?tag=0.6.7#f71ad9122537c4ed29bf496a4a643947a5fe9aef"
+version = "0.6.8"
+source = "git+https://github.com/Brendonovich/prisma-client-rust?tag=0.6.8#51f0473b642b16bb78fe0f5f3235aeb56f89300d"
 dependencies = [
  "convert_case 0.6.0",
  "proc-macro2",
@@ -2297,8 +2312,8 @@ dependencies = [
 
 [[package]]
 name = "prisma-client-rust-sdk"
-version = "0.6.7"
-source = "git+https://github.com/Brendonovich/prisma-client-rust?tag=0.6.7#f71ad9122537c4ed29bf496a4a643947a5fe9aef"
+version = "0.6.8"
+source = "git+https://github.com/Brendonovich/prisma-client-rust?tag=0.6.8#51f0473b642b16bb78fe0f5f3235aeb56f89300d"
 dependencies = [
  "convert_case 0.5.0",
  "dml",
@@ -3040,9 +3055,9 @@ dependencies = [
 
 [[package]]
 name = "serde_json"
-version = "1.0.95"
+version = "1.0.96"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d721eca97ac802aa7777b701877c8004d950fc142651367300d21c1cc0194744"
+checksum = "057d394a50403bcac12672b2b18fb387ab6d289d957dab67dd201875391e52f1"
 dependencies = [
  "indexmap",
  "itoa",

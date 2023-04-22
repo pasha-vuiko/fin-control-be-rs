@@ -1,5 +1,5 @@
+use onlyerror::Error;
 use redis::RedisError;
-use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum CacheError {

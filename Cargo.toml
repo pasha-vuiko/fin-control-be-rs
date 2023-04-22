@@ -11,13 +11,13 @@ members = [
 ]
 
 [dependencies]
-axum = { version = "0.6.15", features = ["headers"] }
+axum = { version = "0.6.16", features = ["headers"] }
 tokio = { version = "1.27", features = ["full"] }
 tower = "0.4.13"
 tower-http = { version = "0.4.0", features = ["trace", "auth"] }
 
 # Serialization/Deserialization
-serde_json = "1.0.95"
+serde_json = "1.0.96"
 serde = { version = "1.0.160", features = ["derive"] }
 
 # Config
@@ -31,7 +31,7 @@ validator = { version = "0.16.0", features = ["derive", "phone"] }
 alcoholic_jwt = "4091.0.0"
 
 # Database ORM
-prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.7", default-features = false, features = ["migrations", "postgresql"] }
+prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.8", default-features = false, features = ["migrations", "postgresql"] }
 
 # Requests
 reqwest = { version = "0.11.16", features = ["json"] }
@@ -45,7 +45,7 @@ tracing = "0.1"
 tower-request-id = "0.2.1"
 
 # Error handling
-thiserror = "1.0.40"
+onlyerror = "0.1.2"
 
 # Util crates
 chrono = "0.4.24" # Working with dates
