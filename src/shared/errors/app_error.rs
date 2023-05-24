@@ -6,7 +6,6 @@ use axum::{
     Json,
 };
 use onlyerror::Error;
-use prisma_client_rust::QueryError;
 use serde::Serialize;
 use serde_json::json;
 use std::fmt::{Display, Formatter};
@@ -80,8 +79,8 @@ impl From<CacheError> for AppError {
     }
 }
 
-impl From<QueryError> for AppError {
-    fn from(value: QueryError) -> Self {
+impl From<prisma_client_rust::QueryError> for AppError {
+    fn from(value: prisma_client_rust::QueryError) -> Self {
         Self::Internal(format!("Prisma QueryError: {}", value))
     }
 }

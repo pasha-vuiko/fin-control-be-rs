@@ -110,7 +110,7 @@ where
 
             let (mut parts, body) = request.into_parts();
 
-            return match parts.extract::<OriginalUri>().await {
+            match parts.extract::<OriginalUri>().await {
                 Ok(original_uri) => {
                     let cache_key = original_uri.to_string();
                     let cached_response = cache_service.get_str(&cache_key).await;
@@ -123,9 +123,10 @@ where
 
                             let response_status = original_response.status();
 
-                            if response_status.is_server_error()
-                                || response_status.is_client_error()
-                            {
+                            let is_error = response_status.is_server_error()
+                                || response_status.is_client_error();
+
+                            if is_error {
                                 return Ok(original_response);
                             }
 
@@ -146,7 +147,7 @@ where
 
                     inner.call(request).await
                 }
-            };
+            }
         })
     }
 }
@@ -154,7 +155,7 @@ where
 async fn set_response_cache<R>(
     cache_key: &str,
     response: Response,
-    redis_service: Arc<R>,
+    cache_service: Arc<R>,
 ) -> Response
 where
     R: CacheService + Send + Sync,
@@ -169,7 +170,7 @@ where
 
                 match String::from_utf8(response_body_vec) {
                     Ok(response_body_str) => {
-                        let set_result = redis_service.set_str(cache_key, &response_body_str).await;
+                        let set_result = cache_service.set_str(cache_key, &response_body_str).await;
 
                         match set_result {
                             Ok(_) => tracing::debug!(

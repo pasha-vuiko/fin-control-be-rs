@@ -49,21 +49,13 @@ impl<B> ValidateRequest<B> for AuthVerify {
         req: &mut Request<B>,
     ) -> Result<(), axum::http::Response<Self::ResponseBody>> {
         match get_bearer_token(req) {
-            Some(token) => {
-                let authenticate = self
-                    .auth_service
-                    .authenticate(&token, self.required_roles.clone())
-                    .map_err(AppError::from);
-
-                match authenticate {
-                    Ok(user) => {
-                        req.extensions_mut().insert(user);
-
-                        Ok(())
-                    }
-                    Err(err) => Err(err.into_response()),
-                }
-            }
+            Some(token) => self
+                .auth_service
+                .authenticate(&token, self.required_roles.clone())
+                .map(|user| {
+                    req.extensions_mut().insert(user);
+                })
+                .map_err(|err| AppError::from(err).into_response()),
             None => {
                 let err = AppError::Unauthorized("Missing Authorization header".into());
 

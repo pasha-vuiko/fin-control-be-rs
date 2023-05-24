@@ -55,45 +55,28 @@ impl Auth0Service {
     }
 
     fn validate_token(&self, token: &str) -> Result<Auth0JwtClaims, AuthError> {
-        let jwks = self.jwks.clone();
         let validations = vec![
             Validation::Issuer(self.issuer.to_string()),
             Validation::SubjectPresent,
             Validation::NotExpired,
         ];
 
-        let token_kid_option = token_kid(token)?;
-
-        match token_kid_option {
-            Some(kid) => match jwks.find(&kid) {
-                Some(jwk) => {
-                    let valid_jwt = validate(token, jwk, validations)?;
-
-                    let str_claims = valid_jwt.claims.to_string();
-                    let claims =
-                        serde_json::from_str::<Auth0JwtClaims>(&str_claims).map_err(|err| {
-                            let msg = format!("Error while deserializing JWT claims: {}", err);
-                            tracing::debug!(msg);
-
-                            AuthError::InvalidToken(msg)
-                        })?;
-
-                    Ok(claims)
-                }
-                None => {
-                    let message = "Token is not valid, Specified key not found in JWKS set";
-                    tracing::debug!("{}", message);
-
-                    Err(AuthError::InvalidToken(message.into()))
-                }
-            },
-            None => {
+        token_kid(token)?
+            .ok_or_else(|| {
                 let message = "Token is not valid, Key ID is not found in the token";
                 tracing::debug!("{}", message);
 
-                Err(AuthError::InvalidToken(message.into()))
-            }
-        }
+                AuthError::InvalidToken(message.into())
+            })
+            .and_then(|kid| self.get_jwk_by_kid(&kid))
+            .and_then(|jwk| {
+                let valid_jwt = validate(token, jwk, validations)?;
+
+                let str_claims = valid_jwt.claims.to_string();
+                let claims = Self::str_claims_to_claims(&str_claims)?;
+
+                Ok(claims)
+            })
     }
 
     fn deserialize_jwt_part<T: DeserializeOwned>(part: &str) -> Result<T, AuthError> {
@@ -102,6 +85,24 @@ impl Auth0Service {
             .map_err(|err| AuthError::InvalidToken(err.to_string()))?;
 
         serde_json::from_slice(&json).map_err(|err| AuthError::InvalidToken(err.to_string()))
+    }
+
+    fn str_claims_to_claims(str_claims: &str) -> Result<Auth0JwtClaims, AuthError> {
+        serde_json::from_str::<Auth0JwtClaims>(str_claims).map_err(|err| {
+            let msg = format!("Error while deserializing JWT claims: {}", err);
+            tracing::debug!(msg);
+
+            AuthError::InvalidToken(msg)
+        })
+    }
+
+    fn get_jwk_by_kid(&self, kid: &str) -> Result<&alcoholic_jwt::JWK, AuthError> {
+        self.jwks.find(kid).ok_or_else(|| {
+            let message = "Token is not valid, Specified key not found in JWKS set";
+            tracing::debug!("{}", message);
+
+            AuthError::InvalidToken(message.into())
+        })
     }
 }
 

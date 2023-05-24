@@ -45,7 +45,7 @@ impl CacheService for RedisService {
 
     async fn get<T>(&self, key: &str) -> Result<T, CacheError>
     where
-        T: serde::de::DeserializeOwned,
+        T: DeserializeOwned,
     {
         let mut redis_connection_manager = self.redis_connection_manager.clone();
         let cached_value = redis_connection_manager.get(key).await?;
@@ -78,10 +78,9 @@ impl CacheService for RedisService {
                     .query_async(&mut redis_connection_manager)
                     .await;
 
-                match redis_result {
-                    Ok(result) => Ok(result.0),
-                    Err(err) => Err(CacheError::Unknown(err.to_string())),
-                }
+                redis_result
+                    .map(|result| result.0)
+                    .map_err(|err| CacheError::Unknown(err.to_string()))
             }
             Err(err) => Err(CacheError::Unknown(format!(
                 "Failed to serialize value for key '{}' to set in Redis, err: '{}'",
@@ -105,10 +104,9 @@ impl CacheService for RedisService {
                     .query_async(&mut redis_connection_manager)
                     .await;
 
-                match redis_result {
-                    Ok(result) => Ok(result.0),
-                    Err(err) => Err(CacheError::Unknown(err.to_string())),
-                }
+                redis_result
+                    .map(|result| result.0)
+                    .map_err(|err| CacheError::Unknown(err.to_string()))
             }
             Err(err) => Err(CacheError::Unknown(format!(
                 "Failed to serialize value for key '{}' to set in Redis, err: '{}'",
@@ -127,10 +125,9 @@ impl CacheService for RedisService {
             .query_async(&mut redis_connection_manager)
             .await;
 
-        match redis_result {
-            Ok(result) => Ok(result.0),
-            Err(err) => Err(CacheError::Unknown(err.to_string())),
-        }
+        redis_result
+            .map(|result| result.0)
+            .map_err(|err| CacheError::Unknown(err.to_string()))
     }
 
     async fn set_str_with_ttl(
@@ -148,10 +145,9 @@ impl CacheService for RedisService {
             .query_async(&mut redis_connection_manager)
             .await;
 
-        match redis_result {
-            Ok(result) => Ok(result.0),
-            Err(err) => Err(CacheError::Unknown(err.to_string())),
-        }
+        redis_result
+            .map(|result| result.0)
+            .map_err(|err| CacheError::Unknown(err.to_string()))
     }
 
     async fn wrap_fn<T, F, Fut>(&self, func: F, cache_key: &str) -> Result<T, CacheError>
