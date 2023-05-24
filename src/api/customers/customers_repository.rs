@@ -23,37 +23,31 @@ impl CustomerRepository {
 #[async_trait]
 impl CustomersRepositoryTrait for CustomerRepository {
     async fn find_one(&self, id: &str) -> Result<CustomerFromDb, AppError> {
-        let customer_from_prisma_option = self
+        let customer_from_prisma = self
             .prisma_client
             .customer()
             .find_unique(customer::id::equals(id.into()))
             .exec()
-            .await?;
+            .await?
+            .ok_or_else(|| {
+                AppError::NotFound(format!("Customer with id '{}' was not found", id))
+            })?;
 
-        match customer_from_prisma_option {
-            Some(customer) => Ok(customer.into()),
-            None => Err(AppError::NotFound(format!(
-                "Customer with id '{}' was not found",
-                id
-            ))),
-        }
+        Ok(customer_from_prisma.into())
     }
 
     async fn find_one_by_user_id(&self, user_id: &str) -> Result<CustomerFromDb, AppError> {
-        let customer_from_prisma_option = self
+        let customer_from_prisma = self
             .prisma_client
             .customer()
             .find_unique(customer::user_id::equals(user_id.into()))
             .exec()
-            .await?;
+            .await?
+            .ok_or_else(|| {
+                AppError::NotFound(format!("Customer with user_id '{}' was not found", user_id))
+            })?;
 
-        match customer_from_prisma_option {
-            Some(customer) => Ok(customer.into()),
-            None => Err(AppError::NotFound(format!(
-                "Customer with user_id '{}' was not found",
-                user_id
-            ))),
-        }
+        Ok(customer_from_prisma.into())
     }
 
     async fn find_many(&self) -> Result<Vec<CustomerFromDb>, AppError> {
@@ -64,10 +58,7 @@ impl CustomersRepositoryTrait for CustomerRepository {
             .exec()
             .await?;
 
-        let mapped_customers = customers_from_prisma
-            .into_iter()
-            .map(|customer_from_prisma| customer_from_prisma.into())
-            .collect();
+        let mapped_customers = customers_from_prisma.into_iter().map(Into::into).collect();
 
         Ok(mapped_customers)
     }

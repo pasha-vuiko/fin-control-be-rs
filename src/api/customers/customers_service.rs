@@ -28,11 +28,11 @@ impl CustomersService {
     }
 
     pub async fn find_one_by_user_id(&self, user_id: &str) -> Result<CustomerEntity, AppError> {
-        let customer_from_db = self
+        let customer_entity = self
             .customers_repository
             .find_one_by_user_id(user_id)
-            .await?;
-        let customer_entity = customer_from_db.into();
+            .await?
+            .into();
 
         Ok(customer_entity)
     }
@@ -40,10 +40,7 @@ impl CustomersService {
     pub async fn find_many(&self) -> Result<Vec<CustomerEntity>, AppError> {
         let customers_from_db = self.customers_repository.find_many().await?;
 
-        let customer_entities = customers_from_db
-            .into_iter()
-            .map(|customer_from_db| customer_from_db.into())
-            .collect();
+        let customer_entities = customers_from_db.into_iter().map(Into::into).collect();
 
         Ok(customer_entities)
     }
@@ -55,7 +52,7 @@ impl CustomersService {
         email: &str,
     ) -> Result<CustomerEntity, AppError> {
         let create_customer_db_dto =
-            CustomersService::map_create_dto_to_create_db_dto(create_dto, user_id, email);
+            Self::map_create_dto_to_create_db_dto(create_dto, user_id, email);
         let created_customer_from_db = self
             .customers_repository
             .create(create_customer_db_dto)
@@ -83,9 +80,11 @@ impl CustomersService {
             "mockAuth0Id".into(),
             "mock@gmail.com".into(),
         );
-        let updated_customer_from_db = self.customers_repository.update(id, update_db_dto).await?;
-
-        let updated_customer_entity = updated_customer_from_db.into();
+        let updated_customer_entity = self
+            .customers_repository
+            .update(id, update_db_dto)
+            .await?
+            .into();
 
         Ok(updated_customer_entity)
     }
@@ -100,16 +99,17 @@ impl CustomersService {
             "mockAuth0Id".into(),
             "mock@gmail.com".into(),
         );
-        let updated_customer_from_db = self.customers_repository.update(id, update_db_dto).await?;
-
-        let updated_customer_entity = updated_customer_from_db.into();
+        let updated_customer_entity = self
+            .customers_repository
+            .update(id, update_db_dto)
+            .await?
+            .into();
 
         Ok(updated_customer_entity)
     }
 
     pub async fn delete_as_admin(&self, id: &str) -> Result<CustomerEntity, AppError> {
-        let deleted_customer_from_db = self.customers_repository.delete(id).await?;
-        let deleted_customer_entity = deleted_customer_from_db.into();
+        let deleted_customer_entity = self.customers_repository.delete(id).await?.into();
 
         Ok(deleted_customer_entity)
     }
@@ -125,8 +125,7 @@ impl CustomersService {
             return Err(AppError::NotFound("The customer was not found".into()));
         }
 
-        let deleted_customer_from_db = self.customers_repository.delete(id).await?;
-        let deleted_customer_entity = deleted_customer_from_db.into();
+        let deleted_customer_entity = self.customers_repository.delete(id).await?.into();
 
         Ok(deleted_customer_entity)
     }

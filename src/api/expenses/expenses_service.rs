@@ -28,8 +28,7 @@ impl ExpensesService {
     }
 
     pub async fn find_one_as_admin(&self, id: &str) -> Result<ExpenseEntity, AppError> {
-        let expense_from_db = self.expenses_repository.find_one(id).await?;
-        let expense_entity = expense_from_db.into();
+        let expense_entity = self.expenses_repository.find_one(id).await?.into();
 
         Ok(expense_entity)
     }
@@ -60,10 +59,7 @@ impl ExpensesService {
     pub async fn find_many(&self) -> Result<Vec<ExpenseEntity>, AppError> {
         let expenses_from_db = self.expenses_repository.find_many(None).await?;
 
-        let expense_entities = expenses_from_db
-            .into_iter()
-            .map(|expense_from_db| expense_from_db.into())
-            .collect();
+        let expense_entities = expenses_from_db.into_iter().map(Into::into).collect();
 
         Ok(expense_entities)
     }
@@ -79,10 +75,7 @@ impl ExpensesService {
         };
         let expenses_from_db = self.expenses_repository.find_many(Some(find_dto)).await?;
 
-        let expense_entities = expenses_from_db
-            .into_iter()
-            .map(|expense_from_db| expense_from_db.into())
-            .collect();
+        let expense_entities = expenses_from_db.into_iter().map(Into::into).collect();
 
         Ok(expense_entities)
     }
@@ -98,17 +91,17 @@ impl ExpensesService {
             .map(|create_dto| Self::map_create_dto_to_create_db_dto(create_dto, &customer.id))
             .collect();
 
-        let created_expense_from_db = self
+        let created_expenses_from_db = self
             .expenses_repository
             .create_many(create_dtos, &customer.id)
             .await?;
 
-        let created_expense_entity = created_expense_from_db
+        let created_expenses_entity = created_expenses_from_db
             .into_iter()
-            .map(|expense| expense.into())
+            .map(Into::into)
             .collect();
 
-        Ok(created_expense_entity)
+        Ok(created_expenses_entity)
     }
 
     pub async fn update(
@@ -120,21 +113,22 @@ impl ExpensesService {
         // Checking if expense exists and belongs to the customer
         self.find_one_as_customer(id, user_id).await?;
 
-        let updated_expense_from_db = self
+        let updated_expense_entity = self
             .expenses_repository
             .update_one(id, update_dto.into())
-            .await?;
+            .await?
+            .into();
 
-        Ok(updated_expense_from_db.into())
+        Ok(updated_expense_entity)
     }
 
     pub async fn delete(&self, id: &str, user_id: &str) -> Result<ExpenseEntity, AppError> {
         // Checking if expense exists and belongs to the customer
         self.find_one_as_customer(id, user_id).await?;
 
-        let deleted_expense = self.expenses_repository.delete_one(id).await?;
+        let deleted_expense_entity = self.expenses_repository.delete_one(id).await?.into();
 
-        Ok(deleted_expense.into())
+        Ok(deleted_expense_entity)
     }
 
     fn map_create_dto_to_create_db_dto(
