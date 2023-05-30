@@ -1,3 +1,3 @@
 pub mod enums;
-pub mod moddlewares;
+pub mod middlewares;
 pub mod traits;

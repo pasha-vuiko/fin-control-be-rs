@@ -1,5 +1,5 @@
 use async_trait::async_trait;
-use redis::{aio::ConnectionManager, AsyncCommands, RedisResult, Value};
+use redis::{aio::ConnectionManager, AsyncCommands, RedisResult};
 use serde::de::DeserializeOwned;
 use serde::Serialize;
 use std::future::Future;
@@ -28,19 +28,7 @@ impl CacheService for RedisService {
         let mut redis_connection_manager = self.redis_connection_manager.clone();
         let cached_value = redis_connection_manager.get(key).await?;
 
-        match cached_value {
-            Value::Data(value) => match String::from_utf8(value) {
-                Ok(str) => Ok(str),
-                Err(err) => Err(CacheError::Unknown(err.to_string())),
-            },
-            Value::Nil => Err(CacheError::KeyNotFound(
-                "Value is not found by the key".into(),
-            )),
-            _ => Err(CacheError::Unknown(format!(
-                "Some error happen on fetching key '{}'",
-                key
-            ))),
-        }
+        Ok(cached_value)
     }
 
     async fn get<T>(&self, key: &str) -> Result<T, CacheError>
@@ -48,19 +36,13 @@ impl CacheService for RedisService {
         T: DeserializeOwned,
     {
         let mut redis_connection_manager = self.redis_connection_manager.clone();
-        let cached_value = redis_connection_manager.get(key).await?;
+        let cached_value = redis_connection_manager
+            .get(key)
+            .await
+            .map(|cached_str: String| serde_json::from_str::<T>(&cached_str))?
+            .map_err(|err| CacheError::Unknown(err.to_string()))?;
 
-        match cached_value {
-            Value::Data(value) => match serde_json::from_slice::<T>(&value) {
-                Ok(deserialized_value) => Ok(deserialized_value),
-                Err(err) => Err(CacheError::Unknown(err.to_string())),
-            },
-            Value::Nil => Err(CacheError::KeyNotFound("Value is not found".into())),
-            _ => Err(CacheError::Unknown(format!(
-                "Some error happen on fetching key '{}'",
-                key
-            ))),
-        }
+        Ok(cached_value)
     }
 
     async fn set<T>(&self, key: &str, value: &T) -> Result<String, CacheError>
@@ -82,10 +64,12 @@ impl CacheService for RedisService {
                     .map(|result| result.0)
                     .map_err(|err| CacheError::Unknown(err.to_string()))
             }
-            Err(err) => Err(CacheError::Unknown(format!(
-                "Failed to serialize value for key '{}' to set in Redis, err: '{}'",
-                key, err
-            ))),
+            Err(err) => {
+                let msg = format!(
+                    "Failed to serialize value for key '{key}' to set in Redis, err: '{err}'"
+                );
+                Err(CacheError::Unknown(msg))
+            }
         }
     }
 
@@ -108,10 +92,12 @@ impl CacheService for RedisService {
                     .map(|result| result.0)
                     .map_err(|err| CacheError::Unknown(err.to_string()))
             }
-            Err(err) => Err(CacheError::Unknown(format!(
-                "Failed to serialize value for key '{}' to set in Redis, err: '{}'",
-                key, err
-            ))),
+            Err(err) => {
+                let msg = format!(
+                    "Failed to serialize value for key '{key}' to set in Redis, err: '{err}'"
+                );
+                Err(CacheError::Unknown(msg))
+            }
         }
     }
 
