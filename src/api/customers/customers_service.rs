@@ -21,8 +21,7 @@ impl CustomersService {
     }
 
     pub async fn find_one_by_id(&self, id: &str) -> Result<CustomerEntity, AppError> {
-        let customer_from_db = self.customers_repository.find_one(id).await?;
-        let customer_entity = customer_from_db.into();
+        let customer_entity = self.customers_repository.find_one(id).await?.into();
 
         Ok(customer_entity)
     }
@@ -38,9 +37,13 @@ impl CustomersService {
     }
 
     pub async fn find_many(&self) -> Result<Vec<CustomerEntity>, AppError> {
-        let customers_from_db = self.customers_repository.find_many().await?;
-
-        let customer_entities = customers_from_db.into_iter().map(Into::into).collect();
+        let customer_entities = self
+            .customers_repository
+            .find_many()
+            .await?
+            .into_iter()
+            .map(CustomerEntity::from)
+            .collect();
 
         Ok(customer_entities)
     }
@@ -68,6 +71,7 @@ impl CustomersService {
         id: &str,
         update_dto: UpdateCustomerDto,
         user_id: &str,
+        user_email: &str,
     ) -> Result<CustomerEntity, AppError> {
         let found_customer = self.customers_repository.find_one(id).await?;
 
@@ -77,8 +81,8 @@ impl CustomersService {
 
         let update_db_dto = CustomersService::map_update_dto_to_update_db_dto(
             update_dto,
-            "mockAuth0Id".into(),
-            "mock@gmail.com".into(),
+            Some(user_id.into()),
+            Some(user_email.into()),
         );
         let updated_customer_entity = self
             .customers_repository
@@ -94,11 +98,8 @@ impl CustomersService {
         id: &str,
         update_dto: UpdateCustomerDto,
     ) -> Result<CustomerEntity, AppError> {
-        let update_db_dto = CustomersService::map_update_dto_to_update_db_dto(
-            update_dto,
-            "mockAuth0Id".into(),
-            "mock@gmail.com".into(),
-        );
+        let update_db_dto =
+            CustomersService::map_update_dto_to_update_db_dto(update_dto, None, None);
         let updated_customer_entity = self
             .customers_repository
             .update(id, update_db_dto)
@@ -148,12 +149,12 @@ impl CustomersService {
 
     fn map_update_dto_to_update_db_dto(
         update_dto: UpdateCustomerDto,
-        user_id: String,
-        email: String,
+        user_id: Option<String>,
+        email: Option<String>,
     ) -> UpdateCustomerDbDto {
         UpdateCustomerDbDto {
-            user_id: Some(user_id),
-            email: Some(email),
+            user_id,
+            email,
             first_name: update_dto.first_name,
             last_name: update_dto.last_name,
             birthdate: update_dto.birthdate,

@@ -23,15 +23,16 @@ impl ExpensesRepository {
 #[async_trait]
 impl ExpensesRepositoryTrait for ExpensesRepository {
     async fn find_one(&self, id: &str) -> Result<ExpenseFromDb, AppError> {
-        let found_expense_from_prisma = self
+        let found_expense = self
             .prisma_client
             .expense()
             .find_unique(expense::id::equals(id.into()))
             .exec()
             .await?
-            .ok_or_else(|| AppError::NotFound(format!("Expense with id {} not found", id)))?;
+            .ok_or_else(|| AppError::NotFound(format!("Expense with id {} not found", id)))?
+            .into();
 
-        Ok(found_expense_from_prisma.into())
+        Ok(found_expense)
     }
 
     async fn find_many(
@@ -43,11 +44,12 @@ impl ExpensesRepositoryTrait for ExpensesRepository {
             .expense()
             .find_many(vec![])
             .exec()
-            .await?;
+            .await?
+            .into_iter()
+            .map(Into::into)
+            .collect();
 
-        let mapped_expenses = found_expenses.into_iter().map(Into::into).collect();
-
-        Ok(mapped_expenses)
+        Ok(found_expenses)
     }
 
     async fn create_many(
@@ -55,23 +57,23 @@ impl ExpensesRepositoryTrait for ExpensesRepository {
         create_dto: Vec<CreateExpenseDbDto>,
         customer_id: &str,
     ) -> Result<Vec<ExpenseFromDb>, AppError> {
+        let prisma_create_dto = create_dto
+            .into_iter()
+            .map(|dto| {
+                expense::create_unchecked(
+                    dto.customer_id,
+                    dto.amount,
+                    dto.date,
+                    dto.category.into(),
+                    vec![],
+                )
+            })
+            .collect();
+
         let created_expenses_amount = self
             .prisma_client
             .expense()
-            .create_many(
-                create_dto
-                    .into_iter()
-                    .map(|dto| {
-                        expense::create_unchecked(
-                            dto.customer_id,
-                            dto.amount,
-                            dto.date,
-                            dto.category.into(),
-                            vec![],
-                        )
-                    })
-                    .collect(),
-            )
+            .create_many(prisma_create_dto)
             .exec()
             .await?;
 
@@ -82,11 +84,12 @@ impl ExpensesRepositoryTrait for ExpensesRepository {
             .take(created_expenses_amount)
             .order_by(expense::created_at::order(Direction::Desc))
             .exec()
-            .await?;
+            .await?
+            .into_iter()
+            .map(ExpenseFromDb::from)
+            .collect();
 
-        let mapped_expenses = created_expenses.into_iter().map(Into::into).collect();
-
-        Ok(mapped_expenses)
+        Ok(created_expenses)
     }
 
     async fn update_one(
@@ -94,24 +97,26 @@ impl ExpensesRepositoryTrait for ExpensesRepository {
         id: &str,
         update_dto: UpdateExpenseDbDto,
     ) -> Result<ExpenseFromDb, AppError> {
-        let updated_expense_from_prisma = self
+        let updated_expense = self
             .prisma_client
             .expense()
             .update(expense::id::equals(id.into()), update_dto.into())
             .exec()
-            .await?;
+            .await?
+            .into();
 
-        Ok(updated_expense_from_prisma.into())
+        Ok(updated_expense)
     }
 
     async fn delete_one(&self, id: &str) -> Result<ExpenseFromDb, AppError> {
-        let deleted_expense_from_prisma = self
+        let deleted_expense = self
             .prisma_client
             .expense()
             .delete(expense::id::equals(id.into()))
             .exec()
-            .await?;
+            .await?
+            .into();
 
-        Ok(deleted_expense_from_prisma.into())
+        Ok(deleted_expense)
     }
 }

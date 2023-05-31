@@ -4,7 +4,6 @@ use axum::http::{header, Method, Request};
 use axum::response::{IntoResponse, Response};
 use axum::RequestPartsExt;
 use futures_util::future::BoxFuture;
-use std::ops::Deref;
 use std::sync::Arc;
 use std::task::{Context, Poll};
 use tower::{Layer, Service};
@@ -110,44 +109,39 @@ where
 
             let (mut parts, body) = request.into_parts();
 
-            match parts.extract::<OriginalUri>().await {
-                Ok(original_uri) => {
-                    let cache_key = original_uri.to_string();
-                    let cached_response = cache_service.get_str(&cache_key).await;
+            let Ok(original_uri) = parts.extract::<OriginalUri>().await else {
+                let request = Request::from_parts(parts, body);
 
-                    let mut response: Response = match cached_response {
-                        Ok(cached_response_body) => cached_response_body.into_response(),
-                        Err(_) => {
-                            let request = Request::from_parts(parts, body);
-                            let original_response = inner.call(request).await?;
+                return inner.call(request).await
+            };
 
-                            let response_status = original_response.status();
+            let cache_key = original_uri.to_string();
+            let cached_response = cache_service.get_str(&cache_key).await;
 
-                            let is_error = response_status.is_server_error()
-                                || response_status.is_client_error();
-
-                            if is_error {
-                                return Ok(original_response);
-                            }
-
-                            set_response_cache(&cache_key, original_response, cache_service.clone())
-                                .await
-                        }
-                    };
-
-                    response.headers_mut().insert(
-                        header::CONTENT_TYPE,
-                        header::HeaderValue::from_static("application/json"),
-                    );
-
-                    Ok(response)
-                }
+            let mut response: Response = match cached_response {
+                Ok(cached_response_body) => cached_response_body.into_response(),
                 Err(_) => {
                     let request = Request::from_parts(parts, body);
+                    let original_response = inner.call(request).await?;
+                    let response_status = original_response.status();
 
-                    inner.call(request).await
+                    let is_error =
+                        response_status.is_server_error() || response_status.is_client_error();
+
+                    if is_error {
+                        return Ok(original_response);
+                    }
+
+                    set_response_cache(&cache_key, original_response, cache_service.clone()).await
                 }
-            }
+            };
+
+            response.headers_mut().insert(
+                header::CONTENT_TYPE,
+                header::HeaderValue::from_static("application/json"),
+            );
+
+            Ok(response)
         })
     }
 }
@@ -163,33 +157,28 @@ where
     let mut response = response;
     let response_data = response.data().await;
 
-    match response_data {
-        Some(response_body_result) => match response_body_result {
-            Ok(response_body_bytes) => {
-                let response_body_vec = response_body_bytes.deref().to_vec();
+    if let Some(response_body_result) = response_data {
+        if let Ok(response_body_bytes) = response_body_result {
+            let response_body_vec = response_body_bytes.to_vec();
 
-                match String::from_utf8(response_body_vec) {
-                    Ok(response_body_str) => {
-                        let set_result = cache_service.set_str(cache_key, &response_body_str).await;
+            if let Ok(response_body_str) = String::from_utf8(response_body_vec) {
+                let set_result = cache_service.set_str(cache_key, &response_body_str).await;
 
-                        match set_result {
-                            Ok(_) => tracing::debug!(
-                                "Cache for endpoint '{}' is set successfully",
-                                cache_key
-                            ),
-                            Err(err) => tracing::warn!(
-                                "Cache for endpoint '{}' is failed to set with err: '{}'",
-                                cache_key,
-                                err
-                            ),
-                        };
-                        response_body_str.into_response()
+                match set_result {
+                    Ok(_) => {
+                        tracing::debug!("Cache for endpoint '{}' is set successfully", cache_key)
                     }
-                    Err(_) => response,
-                }
+                    Err(err) => tracing::warn!(
+                        "Cache for endpoint '{}' is failed to set with err: '{}'",
+                        cache_key,
+                        err
+                    ),
+                };
+
+                return response_body_str.into_response();
             }
-            Err(_) => response,
-        },
-        None => response,
+        }
     }
+
+    response
 }

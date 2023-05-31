@@ -142,25 +142,23 @@ impl CacheService for RedisService {
         F: FnOnce() -> Fut + Send + Sync,
         Fut: Future<Output = Result<T, CacheError>> + Send + Sync,
     {
-        match self.get(cache_key).await {
-            Ok(cached_value) => Ok(cached_value),
-            Err(_) => {
-                let func_value = func().await?;
-                let set_result = self.set(cache_key, &func_value).await;
+        let Ok(cached_value) = self.get(cache_key).await else {
+            let func_value = func().await?;
+            let set_result = self.set(cache_key, &func_value).await;
 
-                match set_result {
-                    Ok(_) => {
-                        tracing::debug!("Cache for endpoint '{}' is set successfully", cache_key)
-                    }
-                    Err(err) => tracing::warn!(
-                        "Cache for endpoint '{}' is failed to set with err: '{}'",
-                        cache_key,
-                        err
-                    ),
-                };
-
-                Ok(func_value)
+            if set_result.is_ok() {
+                tracing::debug!("Cache for endpoint '{}' is set successfully", cache_key)
+            } else {
+                tracing::warn!(
+                    "Cache for endpoint '{}' is failed to set with err: '{}'",
+                    cache_key,
+                    set_result.unwrap_err()
+                )
             }
-        }
+
+            return Ok(func_value);
+        };
+
+        Ok(cached_value)
     }
 }

@@ -60,7 +60,7 @@ pub async fn update(
             .await?
     } else {
         customers_service
-            .update_as_customer(&customer_id, update_customer_dto, &user.id)
+            .update_as_customer(&customer_id, update_customer_dto, &user.id, &user.email)
             .await?
     };
 

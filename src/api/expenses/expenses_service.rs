@@ -51,15 +51,17 @@ impl ExpensesService {
             )));
         }
 
-        let expense_entity = expense_from_db.into();
-
-        Ok(expense_entity)
+        Ok(expense_from_db.into())
     }
 
     pub async fn find_many(&self) -> Result<Vec<ExpenseEntity>, AppError> {
-        let expenses_from_db = self.expenses_repository.find_many(None).await?;
-
-        let expense_entities = expenses_from_db.into_iter().map(Into::into).collect();
+        let expense_entities = self
+            .expenses_repository
+            .find_many(None)
+            .await?
+            .into_iter()
+            .map(ExpenseEntity::from)
+            .collect();
 
         Ok(expense_entities)
     }
@@ -73,9 +75,14 @@ impl ExpensesService {
         let find_dto = FindExpensesDto {
             customer_id: Some(customer.id),
         };
-        let expenses_from_db = self.expenses_repository.find_many(Some(find_dto)).await?;
 
-        let expense_entities = expenses_from_db.into_iter().map(Into::into).collect();
+        let expense_entities = self
+            .expenses_repository
+            .find_many(Some(find_dto))
+            .await?
+            .into_iter()
+            .map(Into::into)
+            .collect();
 
         Ok(expense_entities)
     }
@@ -91,17 +98,15 @@ impl ExpensesService {
             .map(|create_dto| Self::map_create_dto_to_create_db_dto(create_dto, &customer.id))
             .collect();
 
-        let created_expenses_from_db = self
+        let created_expenses_entities = self
             .expenses_repository
             .create_many(create_dtos, &customer.id)
-            .await?;
-
-        let created_expenses_entity = created_expenses_from_db
+            .await?
             .into_iter()
             .map(Into::into)
             .collect();
 
-        Ok(created_expenses_entity)
+        Ok(created_expenses_entities)
     }
 
     pub async fn update(

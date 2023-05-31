@@ -111,11 +111,14 @@ impl AuthService for Auth0Service {
         let claims = self.validate_token(token)?;
         tracing::debug!("Token is validated successfully");
 
-        match Self::check_roles_match(&required_roles, &claims.roles) {
-            true => Ok(claims.into()),
-            false => Err(AuthError::InvalidUserRoles(
+        let roles_match = Self::check_roles_match(&required_roles, &claims.roles);
+
+        if roles_match {
+            Ok(claims.into())
+        } else {
+            Err(AuthError::InvalidUserRoles(
                 "User is not authorized to access this resource".into(),
-            )),
+            ))
         }
     }
 
@@ -123,13 +126,12 @@ impl AuthService for Auth0Service {
         let parts = token.splitn(3, '.').collect::<Vec<&str>>();
         let claims_part = parts.get(1);
 
-        match claims_part {
-            Some(&claims_part) => {
-                let jwt_claims: Auth0JwtClaims = Auth0Service::deserialize_jwt_part(claims_part)?;
+        let Some(&claims_part) = claims_part else {
+            return Err(AuthError::InvalidToken("invalid token".into()));
+        };
 
-                Ok(jwt_claims.into())
-            }
-            None => Err(AuthError::InvalidToken("invalid token".into())),
-        }
+        let jwt_claims: Auth0JwtClaims = Auth0Service::deserialize_jwt_part(claims_part)?;
+
+        Ok(jwt_claims.into())
     }
 }

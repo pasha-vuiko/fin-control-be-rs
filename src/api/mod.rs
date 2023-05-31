@@ -30,13 +30,15 @@ pub async fn get_router(
 }
 
 async fn root_handler() -> Result<String, AppError> {
-    let app_ver = env::var("CARGO_PKG_VERSION");
+    env::var("CARGO_PKG_VERSION")
+        .map(|app_ver| {
+            let formatted_response = format!("App version: {}", app_ver);
 
-    match app_ver {
-        Ok(app_ver) => Ok(format!("App version: {}", app_ver)),
-        Err(err) => Err(AppError::Internal(format!(
-            "Failed to get App Version: {}",
-            err
-        ))),
-    }
+            formatted_response
+        })
+        .map_err(|err| {
+            let err_msg = format!("Failed to get App Version: {}", err);
+
+            AppError::Internal(err_msg)
+        })
 }
