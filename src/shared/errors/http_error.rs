@@ -11,7 +11,7 @@ use serde_json::json;
 use std::fmt::{Display, Formatter};
 
 #[derive(Debug, Error)]
-pub enum AppError {
+pub enum HttpError {
     #[error("{0}")]
     NotFound(String),
     #[error("{0}")]
@@ -24,7 +24,7 @@ pub enum AppError {
     Internal(String),
 }
 
-impl AppError {
+impl HttpError {
     pub fn get_name(&self) -> String {
         match self {
             Self::NotFound(_) => "Not Found".into(),
@@ -46,7 +46,7 @@ impl AppError {
     }
 }
 
-impl IntoResponse for AppError {
+impl IntoResponse for HttpError {
     fn into_response(self) -> Response {
         let status = self.get_status_code();
         let error_response = CustomErrorResponse {
@@ -59,7 +59,7 @@ impl IntoResponse for AppError {
     }
 }
 
-impl From<AuthError> for AppError {
+impl From<AuthError> for HttpError {
     fn from(value: AuthError) -> Self {
         match value {
             AuthError::NoAuthHeaderFound(msg) => Self::Unauthorized(msg),
@@ -70,7 +70,7 @@ impl From<AuthError> for AppError {
     }
 }
 
-impl From<CacheError> for AppError {
+impl From<CacheError> for HttpError {
     fn from(value: CacheError) -> Self {
         match value {
             CacheError::KeyNotFound(msg) => Self::Internal(msg),
@@ -79,19 +79,19 @@ impl From<CacheError> for AppError {
     }
 }
 
-impl From<prisma_client_rust::QueryError> for AppError {
+impl From<prisma_client_rust::QueryError> for HttpError {
     fn from(value: prisma_client_rust::QueryError) -> Self {
         Self::Internal(format!("Prisma QueryError: {}", value))
     }
 }
 
-impl From<serde_json::Error> for AppError {
+impl From<serde_json::Error> for HttpError {
     fn from(value: serde_json::Error) -> Self {
         Self::Internal(format!("Serde JSON Error: {}", value))
     }
 }
 
-impl From<Box<dyn std::error::Error>> for AppError {
+impl From<Box<dyn std::error::Error>> for HttpError {
     fn from(value: Box<dyn std::error::Error>) -> Self {
         Self::Internal(format!("Error: {}", value))
     }

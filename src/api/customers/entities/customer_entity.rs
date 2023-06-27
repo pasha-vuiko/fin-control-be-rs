@@ -1,7 +1,6 @@
+use crate::api::customers::types::{customer_from_db::CustomerFromDb, sex::Sex};
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
-
-use crate::api::customers::{enums::sex::Sex, structs::customer_from_db::CustomerFromDb};
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

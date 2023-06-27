@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::api::expenses::enums::expense_category::ExpenseCategory;
+use crate::api::expenses::types::expense_category::ExpenseCategory;
 use crate::prisma::expense;
 
 #[derive(Serialize, Deserialize, Debug)]

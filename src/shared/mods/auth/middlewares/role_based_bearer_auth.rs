@@ -4,9 +4,9 @@ use axum::response::IntoResponse;
 use std::sync::Arc;
 use tower_http::validate_request::{ValidateRequest, ValidateRequestHeaderLayer};
 
-use crate::shared::errors::app_error::AppError;
+use crate::shared::errors::http_error::HttpError;
 use crate::shared::mods::auth::enums::roles::Roles;
-use crate::shared::mods::auth::traits::role_based_bearer_auth::DynamicAuthService;
+use crate::shared::mods::auth::traits::role_based_bearer_auth_service::DynamicAuthService;
 use crate::shared::utils::get_bearer_token;
 
 // TODO Possibly replace ValidateRequest implementation with AsyncAuthorizeRequest implementation
@@ -49,7 +49,7 @@ impl<B> ValidateRequest<B> for AuthVerify {
         req: &mut Request<B>,
     ) -> Result<(), axum::http::Response<Self::ResponseBody>> {
         let Some(token) = get_bearer_token(req) else {
-            let err = AppError::Unauthorized("Missing Authorization header".into());
+            let err = HttpError::Unauthorized("Missing Authorization header".into());
 
             return Err(err.into_response())
         };
@@ -65,7 +65,7 @@ impl<B> ValidateRequest<B> for AuthVerify {
                 Ok(())
             }
 
-            Err(err) => Err(AppError::from(err).into_response()),
+            Err(err) => Err(HttpError::from(err).into_response()),
         }
     }
 }

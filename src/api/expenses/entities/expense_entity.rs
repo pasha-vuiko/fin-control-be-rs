@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use crate::api::expenses::enums::expense_category::ExpenseCategory;
-use crate::api::expenses::structs::expense_from_db::ExpenseFromDb;
+use crate::api::expenses::types::expense_category::ExpenseCategory;
+use crate::api::expenses::types::expense_from_db::ExpenseFromDb;
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]

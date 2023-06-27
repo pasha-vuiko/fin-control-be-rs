@@ -9,14 +9,14 @@ use crate::shared::mods::cache::traits::cache_service::CacheService;
 
 #[derive(Clone)]
 pub struct RedisService {
-    pub redis_connection_manager: ConnectionManager,
+    connection_manager: ConnectionManager,
     default_ttl: usize,
 }
 
 impl RedisService {
     pub fn new(redis_connection_manager: ConnectionManager, default_ttl: usize) -> Self {
         Self {
-            redis_connection_manager,
+            connection_manager: redis_connection_manager,
             default_ttl,
         }
     }
@@ -25,8 +25,7 @@ impl RedisService {
 #[async_trait]
 impl CacheService for RedisService {
     async fn get_str(&self, key: &str) -> Result<String, CacheError> {
-        let mut redis_connection_manager = self.redis_connection_manager.clone();
-        let cached_value = redis_connection_manager.get(key).await?;
+        let cached_value = self.connection_manager.clone().get(key).await?;
 
         Ok(cached_value)
     }
@@ -35,11 +34,12 @@ impl CacheService for RedisService {
     where
         T: DeserializeOwned,
     {
-        let mut redis_connection_manager = self.redis_connection_manager.clone();
-        let cached_value = redis_connection_manager
+        let cached_value = self
+            .connection_manager
+            .clone()
             .get(key)
             .await
-            .map(|cached_str: String| serde_json::from_str::<T>(&cached_str))?
+            .map(|cached_str: String| serde_json::from_str(&cached_str))?
             .map_err(|err| CacheError::Unknown(err.to_string()))?;
 
         Ok(cached_value)
@@ -49,71 +49,36 @@ impl CacheService for RedisService {
     where
         T: Serialize + Send + Sync,
     {
-        let mut redis_connection_manager = self.redis_connection_manager.clone();
-
-        match serde_json::to_string(value) {
-            Ok(serialized_value) => {
-                let redis_result: RedisResult<(String, i32)> = redis::pipe()
-                    .atomic()
-                    .set(key, &serialized_value)
-                    .expire(key, self.default_ttl)
-                    .query_async(&mut redis_connection_manager)
-                    .await;
-
-                redis_result
-                    .map(|result| result.0)
-                    .map_err(|err| CacheError::Unknown(err.to_string()))
-            }
-            Err(err) => {
-                let msg = format!(
-                    "Failed to serialize value for key '{key}' to set in Redis, err: '{err}'"
-                );
-                Err(CacheError::Unknown(msg))
-            }
-        }
+        // TODO Find out if 0 TTL is valid value
+        self.set_with_ttl(key, value, self.default_ttl).await
     }
 
     async fn set_with_ttl<T>(&self, key: &str, value: &T, ttl: usize) -> Result<String, CacheError>
     where
         T: Serialize + Send + Sync,
     {
-        let mut redis_connection_manager = self.redis_connection_manager.clone();
+        let serialized_value = serde_json::to_string(value).map_err(|err| {
+            CacheError::Unknown(format!(
+                "Failed to serialize value for key '{key}' to set in Redis, err: '{err}'"
+            ))
+        })?;
 
-        match serde_json::to_string(value) {
-            Ok(serialized_value) => {
-                let redis_result: RedisResult<(String, i32)> = redis::pipe()
-                    .atomic()
-                    .set(key, &serialized_value)
-                    .expire(key, ttl)
-                    .query_async(&mut redis_connection_manager)
-                    .await;
-
-                redis_result
-                    .map(|result| result.0)
-                    .map_err(|err| CacheError::Unknown(err.to_string()))
-            }
-            Err(err) => {
-                let msg = format!(
-                    "Failed to serialize value for key '{key}' to set in Redis, err: '{err}'"
-                );
-                Err(CacheError::Unknown(msg))
-            }
-        }
-    }
-
-    async fn set_str(&self, key: &str, value: &str) -> Result<String, CacheError> {
-        let mut redis_connection_manager = self.redis_connection_manager.clone();
-
+        let mut connection_manager = self.connection_manager.clone();
         let redis_result: RedisResult<(String, i32)> = redis::pipe()
             .atomic()
-            .set(key, value)
-            .expire(key, self.default_ttl)
-            .query_async(&mut redis_connection_manager)
+            .set(key, &serialized_value)
+            .expire(key, ttl)
+            .query_async(&mut connection_manager)
             .await;
 
         redis_result
             .map(|result| result.0)
             .map_err(|err| CacheError::Unknown(err.to_string()))
+    }
+
+    async fn set_str(&self, key: &str, value: &str) -> Result<String, CacheError> {
+        // TODO Find out if 0 TTL is valid value
+        self.set_str_with_ttl(key, value, self.default_ttl).await
     }
 
     async fn set_str_with_ttl(
@@ -122,13 +87,12 @@ impl CacheService for RedisService {
         value: &str,
         ttl: usize,
     ) -> Result<String, CacheError> {
-        let mut redis_connection_manager = self.redis_connection_manager.clone();
-
+        let mut connection_manager = self.connection_manager.clone();
         let redis_result: RedisResult<(String, i32)> = redis::pipe()
             .atomic()
             .set(key, value)
             .expire(key, ttl)
-            .query_async(&mut redis_connection_manager)
+            .query_async(&mut connection_manager)
             .await;
 
         redis_result

@@ -12,7 +12,7 @@ mod shared;
 use crate::shared::config::tracing::{get_tracing_layer, init_tracing};
 use crate::shared::handlers::handle_404_resource;
 use crate::shared::mods::auth::services::auth0::Auth0Service;
-use crate::shared::mods::redis::get_redis_service;
+use crate::shared::mods::redis::RedisServiceBuilder;
 
 #[tokio::main]
 async fn main() {
@@ -28,7 +28,11 @@ async fn main() {
         .await
         .expect("Failed to generate prisma client");
     // Redis Connection manager
-    let redis_service = get_redis_service(&config).await;
+    let redis_service = RedisServiceBuilder::new(&config.redis_host, config.redis_port)
+        .with_default_ttl(config.redis_ttl)
+        .build()
+        .await
+        .expect("Failed to generate redis service");
     // Authentication
     let auth_service = Auth0Service::from_auth_domain(&config.auth_auth0_domain)
         .await

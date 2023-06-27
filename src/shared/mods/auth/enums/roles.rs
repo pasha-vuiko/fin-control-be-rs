@@ -1,6 +1,6 @@
 use serde::{Deserialize, Deserializer, Serialize};
 
-use crate::shared::errors::app_error::AppError;
+use crate::shared::errors::http_error::HttpError;
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
 pub enum Roles {
@@ -9,13 +9,13 @@ pub enum Roles {
 }
 
 impl TryFrom<String> for Roles {
-    type Error = AppError;
+    type Error = HttpError;
 
     fn try_from(value: String) -> Result<Self, Self::Error> {
         match value.as_str() {
             "admin" | "ADMIN" | "Admin" => Ok(Roles::Admin),
             "customer" | "CUSTOMER" | "Customer" => Ok(Roles::Customer),
-            _ => Err(AppError::Internal(format!(
+            _ => Err(HttpError::Internal(format!(
                 "Role '{}' is not supported",
                 value
             ))),

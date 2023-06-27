@@ -3,7 +3,7 @@ use axum::Router;
 use std::{env, sync::Arc};
 
 use crate::prisma::PrismaClient;
-use crate::shared::errors::app_error::AppError;
+use crate::shared::errors::http_error::HttpError;
 use crate::shared::mods::auth::services::auth0::Auth0Service;
 use crate::shared::mods::redis::redis_service::RedisService;
 
@@ -29,7 +29,7 @@ pub async fn get_router(
         ))
 }
 
-async fn root_handler() -> Result<String, AppError> {
+async fn root_handler() -> Result<String, HttpError> {
     env::var("CARGO_PKG_VERSION")
         .map(|app_ver| {
             let formatted_response = format!("App version: {}", app_ver);
@@ -39,6 +39,6 @@ async fn root_handler() -> Result<String, AppError> {
         .map_err(|err| {
             let err_msg = format!("Failed to get App Version: {}", err);
 
-            AppError::Internal(err_msg)
+            HttpError::Internal(err_msg)
         })
 }

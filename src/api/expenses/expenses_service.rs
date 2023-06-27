@@ -8,7 +8,7 @@ use crate::api::expenses::dto::find_expenses_dto::FindExpensesDto;
 use crate::api::expenses::dto::update_expense_dto::UpdateExpenseDto;
 use crate::api::expenses::entities::expense_entity::ExpenseEntity;
 use crate::api::expenses::traits::expenses_repository::ExpensesRepositoryTrait;
-use crate::shared::errors::app_error::AppError;
+use crate::shared::errors::http_error::HttpError;
 
 #[derive(Clone)]
 pub struct ExpensesService {
@@ -27,7 +27,7 @@ impl ExpensesService {
         }
     }
 
-    pub async fn find_one_as_admin(&self, id: &str) -> Result<ExpenseEntity, AppError> {
+    pub async fn find_one_as_admin(&self, id: &str) -> Result<ExpenseEntity, HttpError> {
         let expense_entity = self.expenses_repository.find_one(id).await?.into();
 
         Ok(expense_entity)
@@ -37,7 +37,7 @@ impl ExpensesService {
         &self,
         id: &str,
         user_id: &str,
-    ) -> Result<ExpenseEntity, AppError> {
+    ) -> Result<ExpenseEntity, HttpError> {
         let (customer, expense_from_db) = try_join(
             self.customers_service.find_one_by_user_id(user_id),
             self.expenses_repository.find_one(id),
@@ -45,7 +45,7 @@ impl ExpensesService {
         .await?;
 
         if expense_from_db.customer_id != customer.id {
-            return Err(AppError::NotFound(format!(
+            return Err(HttpError::NotFound(format!(
                 "Expense with id {} not found",
                 id
             )));
@@ -54,7 +54,7 @@ impl ExpensesService {
         Ok(expense_from_db.into())
     }
 
-    pub async fn find_many(&self) -> Result<Vec<ExpenseEntity>, AppError> {
+    pub async fn find_many(&self) -> Result<Vec<ExpenseEntity>, HttpError> {
         let expense_entities = self
             .expenses_repository
             .find_many(None)
@@ -69,7 +69,7 @@ impl ExpensesService {
     pub async fn find_many_as_customer(
         &self,
         user_id: &str,
-    ) -> Result<Vec<ExpenseEntity>, AppError> {
+    ) -> Result<Vec<ExpenseEntity>, HttpError> {
         let customer = self.customers_service.find_one_by_user_id(user_id).await?;
 
         let find_dto = FindExpensesDto {
@@ -91,7 +91,7 @@ impl ExpensesService {
         &self,
         create_dtos: Vec<CreateExpenseDto>,
         user_id: &str,
-    ) -> Result<Vec<ExpenseEntity>, AppError> {
+    ) -> Result<Vec<ExpenseEntity>, HttpError> {
         let customer = self.customers_service.find_one_by_user_id(user_id).await?;
         let create_dtos = create_dtos
             .into_iter()
@@ -114,7 +114,7 @@ impl ExpensesService {
         id: &str,
         update_dto: UpdateExpenseDto,
         user_id: &str,
-    ) -> Result<ExpenseEntity, AppError> {
+    ) -> Result<ExpenseEntity, HttpError> {
         // Checking if expense exists and belongs to the customer
         self.find_one_as_customer(id, user_id).await?;
 
@@ -127,7 +127,7 @@ impl ExpensesService {
         Ok(updated_expense_entity)
     }
 
-    pub async fn delete(&self, id: &str, user_id: &str) -> Result<ExpenseEntity, AppError> {
+    pub async fn delete(&self, id: &str, user_id: &str) -> Result<ExpenseEntity, HttpError> {
         // Checking if expense exists and belongs to the customer
         self.find_one_as_customer(id, user_id).await?;
 

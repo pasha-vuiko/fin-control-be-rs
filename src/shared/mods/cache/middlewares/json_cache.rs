@@ -8,7 +8,7 @@ use std::sync::Arc;
 use std::task::{Context, Poll};
 use tower::{Layer, Service};
 
-use crate::shared::mods::auth::traits::role_based_bearer_auth::AuthService;
+use crate::shared::mods::auth::traits::role_based_bearer_auth_service::AuthService;
 use crate::shared::mods::cache::traits::cache_service::CacheService;
 use crate::shared::utils::get_bearer_token;
 
@@ -157,26 +157,24 @@ where
     let mut response = response;
     let response_data = response.data().await;
 
-    if let Some(response_body_result) = response_data {
-        if let Ok(response_body_bytes) = response_body_result {
-            let response_body_vec = response_body_bytes.to_vec();
+    if let Some(Ok(response_body_bytes)) = response_data {
+        let response_body_vec = response_body_bytes.to_vec();
 
-            if let Ok(response_body_str) = String::from_utf8(response_body_vec) {
-                let set_result = cache_service.set_str(cache_key, &response_body_str).await;
+        if let Ok(response_body_str) = String::from_utf8(response_body_vec) {
+            let set_result = cache_service.set_str(cache_key, &response_body_str).await;
 
-                match set_result {
-                    Ok(_) => {
-                        tracing::debug!("Cache for endpoint '{}' is set successfully", cache_key)
-                    }
-                    Err(err) => tracing::warn!(
-                        "Cache for endpoint '{}' is failed to set with err: '{}'",
-                        cache_key,
-                        err
-                    ),
-                };
+            match set_result {
+                Ok(_) => {
+                    tracing::debug!("Cache for endpoint '{}' is set successfully", cache_key)
+                }
+                Err(err) => tracing::warn!(
+                    "Cache for endpoint '{}' is failed to set with err: '{}'",
+                    cache_key,
+                    err
+                ),
+            };
 
-                return response_body_str.into_response();
-            }
+            return response_body_str.into_response();
         }
     }
 

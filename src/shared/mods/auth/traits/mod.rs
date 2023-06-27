@@ -1,1 +1,1 @@
-pub mod role_based_bearer_auth;
+pub mod role_based_bearer_auth_service;

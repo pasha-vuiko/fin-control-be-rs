@@ -7,7 +7,7 @@ use crate::api::customers::{
     entities::customer_entity::CustomerEntity,
     traits::customers_repository::CustomersRepositoryTrait,
 };
-use crate::shared::errors::app_error::AppError;
+use crate::shared::errors::http_error::HttpError;
 
 #[derive(Clone)]
 pub struct CustomersService {
@@ -20,13 +20,13 @@ impl CustomersService {
         }
     }
 
-    pub async fn find_one_by_id(&self, id: &str) -> Result<CustomerEntity, AppError> {
+    pub async fn find_one_by_id(&self, id: &str) -> Result<CustomerEntity, HttpError> {
         let customer_entity = self.customers_repository.find_one(id).await?.into();
 
         Ok(customer_entity)
     }
 
-    pub async fn find_one_by_user_id(&self, user_id: &str) -> Result<CustomerEntity, AppError> {
+    pub async fn find_one_by_user_id(&self, user_id: &str) -> Result<CustomerEntity, HttpError> {
         let customer_entity = self
             .customers_repository
             .find_one_by_user_id(user_id)
@@ -36,7 +36,7 @@ impl CustomersService {
         Ok(customer_entity)
     }
 
-    pub async fn find_many(&self) -> Result<Vec<CustomerEntity>, AppError> {
+    pub async fn find_many(&self) -> Result<Vec<CustomerEntity>, HttpError> {
         let customer_entities = self
             .customers_repository
             .find_many()
@@ -53,7 +53,7 @@ impl CustomersService {
         create_dto: CreateCustomerDto,
         user_id: &str,
         email: &str,
-    ) -> Result<CustomerEntity, AppError> {
+    ) -> Result<CustomerEntity, HttpError> {
         let create_customer_db_dto =
             Self::map_create_dto_to_create_db_dto(create_dto, user_id, email);
         let created_customer_from_db = self
@@ -72,11 +72,11 @@ impl CustomersService {
         update_dto: UpdateCustomerDto,
         user_id: &str,
         user_email: &str,
-    ) -> Result<CustomerEntity, AppError> {
+    ) -> Result<CustomerEntity, HttpError> {
         let found_customer = self.customers_repository.find_one(id).await?;
 
         if found_customer.user_id != user_id {
-            return Err(AppError::NotFound("The customer was not found".into()));
+            return Err(HttpError::NotFound("The customer was not found".into()));
         }
 
         let update_db_dto = CustomersService::map_update_dto_to_update_db_dto(
@@ -97,7 +97,7 @@ impl CustomersService {
         &self,
         id: &str,
         update_dto: UpdateCustomerDto,
-    ) -> Result<CustomerEntity, AppError> {
+    ) -> Result<CustomerEntity, HttpError> {
         let update_db_dto =
             CustomersService::map_update_dto_to_update_db_dto(update_dto, None, None);
         let updated_customer_entity = self
@@ -109,7 +109,7 @@ impl CustomersService {
         Ok(updated_customer_entity)
     }
 
-    pub async fn delete_as_admin(&self, id: &str) -> Result<CustomerEntity, AppError> {
+    pub async fn delete_as_admin(&self, id: &str) -> Result<CustomerEntity, HttpError> {
         let deleted_customer_entity = self.customers_repository.delete(id).await?.into();
 
         Ok(deleted_customer_entity)
@@ -119,11 +119,11 @@ impl CustomersService {
         &self,
         id: &str,
         user_id: &str,
-    ) -> Result<CustomerEntity, AppError> {
+    ) -> Result<CustomerEntity, HttpError> {
         let found_customer = self.customers_repository.find_one(id).await?;
 
         if found_customer.user_id != user_id {
-            return Err(AppError::NotFound("The customer was not found".into()));
+            return Err(HttpError::NotFound("The customer was not found".into()));
         }
 
         let deleted_customer_entity = self.customers_repository.delete(id).await?.into();

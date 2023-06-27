@@ -8,10 +8,10 @@ pub struct AppConfig {
     pub port: u16,
 
     // Redis
-    pub redis_config_sentinels: String,
-    pub redis_config_name: String,
-    pub redis_config_host: String,
-    pub redis_config_port: u16,
+    pub redis_sentinels: String,
+    pub redis_name: String,
+    pub redis_host: String,
+    pub redis_port: u16,
     pub redis_ttl: usize, // seconds
 
     // Auth0

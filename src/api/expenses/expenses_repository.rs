@@ -5,10 +5,10 @@ use std::sync::Arc;
 use crate::api::expenses::dto::create_expense_db_dto::CreateExpenseDbDto;
 use crate::api::expenses::dto::find_expenses_dto::FindExpensesDto;
 use crate::api::expenses::dto::update_expense_db_dto::UpdateExpenseDbDto;
-use crate::api::expenses::structs::expense_from_db::ExpenseFromDb;
 use crate::api::expenses::traits::expenses_repository::ExpensesRepositoryTrait;
+use crate::api::expenses::types::expense_from_db::ExpenseFromDb;
 use crate::prisma::{expense, PrismaClient};
-use crate::shared::errors::app_error::AppError;
+use crate::shared::errors::http_error::HttpError;
 
 pub struct ExpensesRepository {
     prisma_client: Arc<PrismaClient>,
@@ -22,14 +22,14 @@ impl ExpensesRepository {
 
 #[async_trait]
 impl ExpensesRepositoryTrait for ExpensesRepository {
-    async fn find_one(&self, id: &str) -> Result<ExpenseFromDb, AppError> {
+    async fn find_one(&self, id: &str) -> Result<ExpenseFromDb, HttpError> {
         let found_expense = self
             .prisma_client
             .expense()
             .find_unique(expense::id::equals(id.into()))
             .exec()
             .await?
-            .ok_or_else(|| AppError::NotFound(format!("Expense with id {} not found", id)))?
+            .ok_or_else(|| HttpError::NotFound(format!("Expense with id {} not found", id)))?
             .into();
 
         Ok(found_expense)
@@ -38,7 +38,7 @@ impl ExpensesRepositoryTrait for ExpensesRepository {
     async fn find_many(
         &self,
         _filter: Option<FindExpensesDto>,
-    ) -> Result<Vec<ExpenseFromDb>, AppError> {
+    ) -> Result<Vec<ExpenseFromDb>, HttpError> {
         let found_expenses = self
             .prisma_client
             .expense()
@@ -56,7 +56,7 @@ impl ExpensesRepositoryTrait for ExpensesRepository {
         &self,
         create_dto: Vec<CreateExpenseDbDto>,
         customer_id: &str,
-    ) -> Result<Vec<ExpenseFromDb>, AppError> {
+    ) -> Result<Vec<ExpenseFromDb>, HttpError> {
         let prisma_create_dto = create_dto
             .into_iter()
             .map(|dto| {
@@ -96,7 +96,7 @@ impl ExpensesRepositoryTrait for ExpensesRepository {
         &self,
         id: &str,
         update_dto: UpdateExpenseDbDto,
-    ) -> Result<ExpenseFromDb, AppError> {
+    ) -> Result<ExpenseFromDb, HttpError> {
         let updated_expense = self
             .prisma_client
             .expense()
@@ -108,7 +108,7 @@ impl ExpensesRepositoryTrait for ExpensesRepository {
         Ok(updated_expense)
     }
 
-    async fn delete_one(&self, id: &str) -> Result<ExpenseFromDb, AppError> {
+    async fn delete_one(&self, id: &str) -> Result<ExpenseFromDb, HttpError> {
         let deleted_expense = self
             .prisma_client
             .expense()

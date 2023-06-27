@@ -3,11 +3,11 @@ use std::sync::Arc;
 
 use crate::api::customers::dto::create_customer_db_dto::CreateCustomerDbDto;
 use crate::api::customers::dto::update_customer_db_dto::UpdateCustomerDbDto;
-use crate::api::customers::structs::customer_from_db::CustomerFromDb;
 use crate::api::customers::traits::customers_repository::CustomersRepositoryTrait;
+use crate::api::customers::types::customer_from_db::CustomerFromDb;
 
 use crate::prisma::{customer, PrismaClient};
-use crate::shared::errors::app_error::AppError;
+use crate::shared::errors::http_error::HttpError;
 
 #[derive(Clone)]
 pub struct CustomerRepository {
@@ -22,7 +22,7 @@ impl CustomerRepository {
 
 #[async_trait]
 impl CustomersRepositoryTrait for CustomerRepository {
-    async fn find_one(&self, id: &str) -> Result<CustomerFromDb, AppError> {
+    async fn find_one(&self, id: &str) -> Result<CustomerFromDb, HttpError> {
         let customer_from_prisma = self
             .prisma_client
             .customer()
@@ -30,13 +30,13 @@ impl CustomersRepositoryTrait for CustomerRepository {
             .exec()
             .await?
             .ok_or_else(|| {
-                AppError::NotFound(format!("Customer with id '{}' was not found", id))
+                HttpError::NotFound(format!("Customer with id '{}' was not found", id))
             })?;
 
         Ok(customer_from_prisma.into())
     }
 
-    async fn find_one_by_user_id(&self, user_id: &str) -> Result<CustomerFromDb, AppError> {
+    async fn find_one_by_user_id(&self, user_id: &str) -> Result<CustomerFromDb, HttpError> {
         let customer_from_prisma = self
             .prisma_client
             .customer()
@@ -44,13 +44,13 @@ impl CustomersRepositoryTrait for CustomerRepository {
             .exec()
             .await?
             .ok_or_else(|| {
-                AppError::NotFound(format!("Customer with user_id '{}' was not found", user_id))
+                HttpError::NotFound(format!("Customer with user_id '{}' was not found", user_id))
             })?;
 
         Ok(customer_from_prisma.into())
     }
 
-    async fn find_many(&self) -> Result<Vec<CustomerFromDb>, AppError> {
+    async fn find_many(&self) -> Result<Vec<CustomerFromDb>, HttpError> {
         let customers_from_prisma = self
             .prisma_client
             .customer()
@@ -63,7 +63,7 @@ impl CustomersRepositoryTrait for CustomerRepository {
         Ok(mapped_customers)
     }
 
-    async fn create(&self, create_dto: CreateCustomerDbDto) -> Result<CustomerFromDb, AppError> {
+    async fn create(&self, create_dto: CreateCustomerDbDto) -> Result<CustomerFromDb, HttpError> {
         let created_customer_from_prisma = self
             .prisma_client
             .customer()
@@ -86,7 +86,7 @@ impl CustomersRepositoryTrait for CustomerRepository {
         &self,
         id: &str,
         update_dto: UpdateCustomerDbDto,
-    ) -> Result<CustomerFromDb, AppError> {
+    ) -> Result<CustomerFromDb, HttpError> {
         let updated_customer_from_prisma = self
             .prisma_client
             .customer()
@@ -97,7 +97,7 @@ impl CustomersRepositoryTrait for CustomerRepository {
         Ok(updated_customer_from_prisma.into())
     }
 
-    async fn delete(&self, id: &str) -> Result<CustomerFromDb, AppError> {
+    async fn delete(&self, id: &str) -> Result<CustomerFromDb, HttpError> {
         let deleted_customer = self
             .prisma_client
             .customer()

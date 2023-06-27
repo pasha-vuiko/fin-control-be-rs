@@ -6,7 +6,7 @@ use crate::api::customers::customers_repository::CustomerRepository;
 use crate::api::customers::customers_service::CustomersService;
 use crate::api::expenses::expenses_repository::ExpensesRepository;
 use crate::api::expenses::expenses_service::ExpensesService;
-use crate::api::expenses::structs::state::ExpensesApiState;
+use crate::api::expenses::types::api_state::ExpensesApiState;
 
 use crate::prisma::PrismaClient;
 use crate::shared::mods::auth::enums::roles::Roles;
@@ -17,9 +17,8 @@ use crate::shared::mods::redis::redis_service::RedisService;
 
 mod dto;
 mod entities;
-mod enums;
-mod structs;
 mod traits;
+mod types;
 
 mod expenses_handlers;
 mod expenses_repository;

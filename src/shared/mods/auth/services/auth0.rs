@@ -3,12 +3,12 @@ use base64;
 use base64::Engine;
 use serde::de::DeserializeOwned;
 
-use crate::shared::errors::app_error::AppError;
+use crate::shared::errors::http_error::HttpError;
 use crate::shared::mods::auth::enums::errors::AuthError;
 use crate::shared::mods::auth::enums::roles::Roles;
 use crate::shared::mods::auth::structs::auth0_claims::Auth0JwtClaims;
 use crate::shared::mods::auth::structs::user::User;
-use crate::shared::mods::auth::traits::role_based_bearer_auth::AuthService;
+use crate::shared::mods::auth::traits::role_based_bearer_auth_service::AuthService;
 
 #[derive(Clone)]
 pub struct Auth0Service {
@@ -17,7 +17,7 @@ pub struct Auth0Service {
 }
 
 impl Auth0Service {
-    pub async fn from_auth_domain(jwks_domain: &str) -> Result<Self, AppError> {
+    pub async fn from_auth_domain(jwks_domain: &str) -> Result<Self, HttpError> {
         let issuer = format!("https://{}/", jwks_domain);
         let jwks_url = format!("{}{}", issuer, ".well-known/jwks.json");
         let jwks = Self::fetch_jwks(&jwks_url).await?;

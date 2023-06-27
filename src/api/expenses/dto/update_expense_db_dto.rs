@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::api::expenses::dto::update_expense_dto::UpdateExpenseDto;
-use crate::api::expenses::enums::expense_category::ExpenseCategory;
+use crate::api::expenses::types::expense_category::ExpenseCategory;
 use crate::prisma::expense;
 
 #[derive(Serialize, Deserialize, Debug)]

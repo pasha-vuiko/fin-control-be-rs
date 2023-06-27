@@ -6,7 +6,7 @@ use axum::{
 use std::sync::Arc;
 
 use crate::api::customers::{
-    customers_service::CustomersService, structs::state::CustomersApiState,
+    customers_service::CustomersService, types::api_state::CustomersApiState,
 };
 use crate::prisma::PrismaClient;
 use crate::shared::mods::auth::enums::roles::Roles;
@@ -20,9 +20,8 @@ pub mod customers_repository;
 pub mod customers_service;
 mod dto;
 mod entities;
-mod enums;
-mod structs;
 mod traits;
+mod types;
 
 pub fn get_router(
     prisma_client: Arc<PrismaClient>,

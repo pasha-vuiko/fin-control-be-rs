@@ -1,7 +1,7 @@
 use axum::response::IntoResponse;
 
-use crate::shared::errors::app_error::AppError;
+use crate::shared::errors::http_error::HttpError;
 
 pub async fn handle_404_resource() -> impl IntoResponse {
-    AppError::NotFound("The resource was not found".into())
+    HttpError::NotFound("The resource was not found".into())
 }

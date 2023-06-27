@@ -1,7 +1,7 @@
 use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
-use crate::api::customers::enums::sex::Sex;
+use crate::api::customers::types::sex::Sex;
 use crate::prisma::customer;
 
 #[derive(Serialize, Deserialize, Debug)]
