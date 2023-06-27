@@ -14,10 +14,10 @@ members = [
 axum = { version = "0.6.18", features = ["headers"] }
 tokio = { version = "1.28", features = ["full"] }
 tower = "0.4.13"
-tower-http = { version = "0.4.0", features = ["trace", "auth"] }
+tower-http = { version = "0.4.1", features = ["trace", "auth"] }
 
 # Serialization/Deserialization
-serde_json = "1.0.96"
+serde_json = "1.0.99"
 serde = { version = "1.0.164", features = ["derive"] }
 
 # Config
@@ -25,7 +25,7 @@ dotenv = "0.15.0"
 envy = "0.4"
 
 # Validation
-validator = { version = "0.16.0", features = ["derive", "phone"] }
+validator = { version = "0.16.1", features = ["derive", "phone"] }
 
 # Authentication
 alcoholic_jwt = "4091.0.0"
@@ -45,7 +45,7 @@ tracing = "0.1"
 tower-request-id = "0.2.1"
 
 # Error handling
-onlyerror = "0.1.2"
+onlyerror = "0.1.3"
 
 # Util crates
 chrono = "0.4.26" # Working with dates
