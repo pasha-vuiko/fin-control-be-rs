@@ -31,6 +31,7 @@ pub fn get_router(
     let customers_repository = Arc::new(CustomerRepository::new(prisma_client));
     let customers_service = Arc::new(CustomersService::new(customers_repository));
     let api_state = CustomersApiState { customers_service };
+
     let auth_layer = AuthLayer::new(auth_service.clone());
     let cache_layer = JsonCacheLayer::new(redis_service, auth_service);
 

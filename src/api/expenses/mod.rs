@@ -36,6 +36,7 @@ pub fn get_router(
     let expenses_service = Arc::new(ExpensesService::new(expenses_repository, customers_service));
 
     let api_state = ExpensesApiState { expenses_service };
+
     let auth_layer = AuthLayer::new(auth_service.clone());
     let cache_layer = JsonCacheLayer::new(redis_service, auth_service);
 
