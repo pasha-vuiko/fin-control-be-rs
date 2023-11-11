@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::api::expenses::types::expense_category::ExpenseCategory;
-use crate::prisma::expense;
+use prisma_client::expense;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ExpenseFromDb {
@@ -19,7 +19,7 @@ impl From<expense::Data> for ExpenseFromDb {
         Self {
             id: value.id,
             customer_id: value.customer_id,
-            amount: value.amount.parse().unwrap(), // TODO handle error
+            amount: value.amount,
             date: value.date,
             category: value.category.into(),
             created_at: value.created_at,

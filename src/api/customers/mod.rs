@@ -8,12 +8,12 @@ use std::sync::Arc;
 use crate::api::customers::{
     customers_service::CustomersService, types::api_state::CustomersApiState,
 };
-use crate::prisma::PrismaClient;
-use crate::shared::mods::auth::enums::roles::Roles;
-use crate::shared::mods::auth::middlewares::role_based_bearer_auth::AuthLayer;
-use crate::shared::mods::auth::services::auth0::Auth0Service;
-use crate::shared::mods::cache::middlewares::json_cache::JsonCacheLayer;
-use crate::shared::mods::redis::redis_service::RedisService;
+use crate::shared::modules::auth::enums::roles::Roles;
+use crate::shared::modules::auth::middlewares::role_based_bearer_auth::AuthLayer;
+use crate::shared::modules::auth::services::auth0::Auth0Service;
+use crate::shared::modules::cache::middlewares::json_cache::JsonCacheLayer;
+use crate::shared::modules::redis::redis_service::RedisService;
+use prisma_client::PrismaClient;
 
 mod customers_handlers;
 pub mod customers_repository;

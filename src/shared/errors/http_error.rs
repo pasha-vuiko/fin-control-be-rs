@@ -1,16 +1,17 @@
-use crate::shared::mods::auth::enums::errors::AuthError;
-use crate::shared::mods::cache::enums::errors::CacheError;
+use crate::shared::modules::auth::errors::AuthError;
+use crate::shared::modules::cache::errors::CacheError;
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
     Json,
 };
 use onlyerror::Error;
+use schemars::JsonSchema;
 use serde::Serialize;
 use serde_json::json;
 use std::fmt::{Display, Formatter};
 
-#[derive(Debug, Error)]
+#[derive(Serialize, Debug, Error, JsonSchema)]
 pub enum HttpError {
     #[error("{0}")]
     NotFound(String),
@@ -75,6 +76,7 @@ impl From<CacheError> for HttpError {
         match value {
             CacheError::KeyNotFound(msg) => Self::Internal(msg),
             CacheError::Unknown(msg) => Self::Internal(msg),
+            CacheError::FailedToParseResponse(msg) => Self::Internal(msg),
         }
     }
 }

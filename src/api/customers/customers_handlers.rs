@@ -8,7 +8,7 @@ use crate::api::customers::{
     entities::customer_entity::CustomerEntity,
 };
 use crate::shared::errors::http_error::HttpError;
-use crate::shared::mods::auth::structs::user::User;
+use crate::shared::modules::auth::structs::user::User;
 
 pub async fn find_one(
     Path(customer_id): Path<String>,

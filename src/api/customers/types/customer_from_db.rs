@@ -2,7 +2,7 @@ use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
 use crate::api::customers::types::sex::Sex;
-use crate::prisma::customer;
+use prisma_client::customer;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CustomerFromDb {

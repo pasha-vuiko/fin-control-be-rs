@@ -1,4 +1,5 @@
 use async_trait::async_trait;
+use prisma_client::{customer, PrismaClient};
 use std::sync::Arc;
 
 use crate::api::customers::dto::create_customer_db_dto::CreateCustomerDbDto;
@@ -6,7 +7,6 @@ use crate::api::customers::dto::update_customer_db_dto::UpdateCustomerDbDto;
 use crate::api::customers::traits::customers_repository::CustomersRepositoryTrait;
 use crate::api::customers::types::customer_from_db::CustomerFromDb;
 
-use crate::prisma::{customer, PrismaClient};
 use crate::shared::errors::http_error::HttpError;
 
 #[derive(Clone)]

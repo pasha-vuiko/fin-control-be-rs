@@ -2,10 +2,10 @@ use axum::routing::get;
 use axum::Router;
 use std::{env, sync::Arc};
 
-use crate::prisma::PrismaClient;
 use crate::shared::errors::http_error::HttpError;
-use crate::shared::mods::auth::services::auth0::Auth0Service;
-use crate::shared::mods::redis::redis_service::RedisService;
+use crate::shared::modules::auth::services::auth0::Auth0Service;
+use crate::shared::modules::redis::redis_service::RedisService;
+use prisma_client::PrismaClient;
 
 mod customers;
 mod expenses;

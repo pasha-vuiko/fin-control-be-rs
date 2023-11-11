@@ -3,16 +3,14 @@ use dotenv::dotenv;
 use std::{env, net::SocketAddr, sync::Arc};
 use tower_request_id::RequestIdLayer;
 
-mod prisma;
-
 mod api;
 use crate::shared::config::AppConfig;
 
 mod shared;
 use crate::shared::config::tracing::{get_tracing_layer, init_tracing};
 use crate::shared::handlers::handle_404_resource;
-use crate::shared::mods::auth::services::auth0::Auth0Service;
-use crate::shared::mods::redis::RedisServiceBuilder;
+use crate::shared::modules::auth::services::auth0::Auth0Service;
+use crate::shared::modules::redis::RedisServiceBuilder;
 
 #[tokio::main]
 async fn main() {
@@ -24,7 +22,7 @@ async fn main() {
     let config = envy::from_env::<AppConfig>().expect("failed to parse app config");
 
     // Prisma client
-    let prisma_client = prisma::new_client()
+    let prisma_client = prisma_client::new_client()
         .await
         .expect("Failed to generate prisma client");
     // Redis Connection manager

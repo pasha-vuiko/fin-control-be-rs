@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::prisma;
+use prisma_client as prisma;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub enum Sex {

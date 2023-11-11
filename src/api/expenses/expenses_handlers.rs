@@ -3,7 +3,7 @@ use crate::api::expenses::dto::update_expense_dto::UpdateExpenseDto;
 use crate::api::expenses::entities::expense_entity::ExpenseEntity;
 use crate::api::expenses::expenses_service::ExpensesService;
 use crate::shared::errors::http_error::HttpError;
-use crate::shared::mods::auth::structs::user::User;
+use crate::shared::modules::auth::structs::user::User;
 use axum::extract::{Path, State};
 use axum::{Extension, Json};
 use std::sync::Arc;

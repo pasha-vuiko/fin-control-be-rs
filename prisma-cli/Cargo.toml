@@ -7,4 +7,4 @@ edition = "2021"
 rspc = ["prisma-client-rust-cli/rspc"]
 
 [dependencies]
-prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.8", default-features = false, features = ["migrations", "postgresql"] }
+prisma-client-rust-cli = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.10", default-features = false, features = ["migrations", "postgresql"] }
