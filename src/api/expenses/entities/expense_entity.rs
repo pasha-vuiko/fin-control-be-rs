@@ -1,9 +1,11 @@
+use aide::OperationIo;
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use crate::api::expenses::types::expense_category::ExpenseCategory;
 use crate::api::expenses::types::expense_from_db::ExpenseFromDb;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, OperationIo)]
 #[serde(rename_all = "camelCase")]
 pub struct ExpenseEntity {
     pub id: String,

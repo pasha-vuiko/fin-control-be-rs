@@ -12,7 +12,7 @@ members = [
 ]
 
 [dependencies]
-axum = { version = "0.6.0", features = ["headers", "macros"] }
+axum = { version = "0.6.20", features = ["headers", "macros"] }
 axum-macros = { version = "0.3.8" }
 tokio = { version = "1.34", features = ["macros"] }
 tower = "0.4.13"
@@ -20,7 +20,7 @@ tower-http = { version = "0.4.4", features = ["trace", "auth"] }
 
 # Serialization/Deserialization
 serde_json = "1.0.108"
-serde = { version = "1.0.192", features = ["derive"] }
+serde = { version = "1.0.192", features = ["derive", "rc"] }
 
 # Config
 dotenv = "0.15.0"
@@ -43,8 +43,8 @@ reqwest = { version = "0.11.22", features = ["json"] }
 redis = { version = "0.23.3", features = ["tokio-comp", "connection-manager"] }
 
 # Logger
-tracing-subscriber = { version = "0.3", features = ["env-filter", "json"] }
-tracing = "0.1"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
+tracing = "0.1.40"
 tower-request-id = "0.2.1"
 
 # Error handling
@@ -63,7 +63,7 @@ aide = { version = "0.12.0", features = [
     "axum-extra",
     "macros",
 ] }
-schemars = { version = "0.8.10", features = ["uuid1", "chrono"] }
+schemars = { version = "0.8.16", features = ["uuid1", "chrono"] }
 axum-jsonschema = { version = "0.7.0", features = [
     "aide",
 ] }

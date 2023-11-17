@@ -1,25 +1,25 @@
-use axum::Router;
-use dotenv::dotenv;
+use aide::axum::ApiRouter;
+use axum::Extension;
 use std::{env, net::SocketAddr, sync::Arc};
 use tower_request_id::RequestIdLayer;
 
 mod api;
-use crate::shared::config::AppConfig;
+use crate::shared::config::get_config;
 
 mod shared;
-use crate::shared::config::tracing::{get_tracing_layer, init_tracing};
 use crate::shared::handlers::handle_404_resource;
+use crate::shared::logger;
 use crate::shared::modules::auth::services::auth0::Auth0Service;
+use crate::shared::modules::open_api::{get_api_docs, get_open_api, get_open_api_router};
 use crate::shared::modules::redis::RedisServiceBuilder;
 
 #[tokio::main]
 async fn main() {
-    // fetch ENV vars from the file if exists
-    dotenv().ok();
-    // init logging
-    init_tracing();
-    //config
-    let config = envy::from_env::<AppConfig>().expect("failed to parse app config");
+    let config = get_config().expect("Failed to get config");
+
+    logger::init_logger(&config.log_format, &config.log_level);
+
+    let mut open_api = get_open_api();
 
     // Prisma client
     let prisma_client = prisma_client::new_client()
@@ -45,10 +45,13 @@ async fn main() {
     .await;
 
     // building of an application
-    let app = Router::new()
+    let app = ApiRouter::new()
         .merge(api_router)
+        .nest_api_service("/docs", get_open_api_router())
+        .finish_api_with(&mut open_api, get_api_docs)
+        .layer(Extension(Arc::new(open_api)))
         .fallback(handle_404_resource)
-        .layer(get_tracing_layer())
+        .layer(logger::get_logger_layer())
         .layer(RequestIdLayer);
 
     tracing::info!("App version: {}", env::var("CARGO_PKG_VERSION").unwrap());

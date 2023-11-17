@@ -1,5 +1,3 @@
-use crate::shared::errors::http_error::HttpError;
-use crate::shared::extractors::open_api_json::Json;
 use aide::transform::TransformOpenApi;
 use aide::{
     axum::{
@@ -10,30 +8,29 @@ use aide::{
     redoc::Redoc,
 };
 use axum::{response::IntoResponse, Extension};
+use axum_jsonschema::Json;
+use std::sync::Arc;
 
 pub fn get_open_api() -> OpenApi {
     aide::gen::on_error(|error| {
         println!("init Open API error: {error}");
     });
     aide::gen::extract_schemas(true);
+    aide::gen::infer_responses(true);
 
     OpenApi::default()
 }
 
 pub fn get_api_docs(api: TransformOpenApi) -> TransformOpenApi {
-    api.title("Fin control be")
-        .security_scheme(
-            "ApiKey",
-            aide::openapi::SecurityScheme::ApiKey {
-                location: aide::openapi::ApiKeyLocation::Header,
-                name: "X-Auth-Key".into(),
-                description: Some("A key that is ignored.".into()),
-                extensions: Default::default(),
-            },
-        )
-        .default_response_with::<Json<HttpError>, _>(|res| {
-            res.example(HttpError::Internal("Internal Server Error".into()))
-        })
+    api.title("Fin control BE").security_scheme(
+        "BearerAuth",
+        aide::openapi::SecurityScheme::Http {
+            scheme: "".to_string(),
+            bearer_format: Some("Bearer <token>".to_string()),
+            description: Some("A key that is ignored.".into()),
+            extensions: Default::default(),
+        },
+    )
 }
 
 pub fn get_open_api_router() -> ApiRouter {
@@ -65,7 +62,6 @@ pub fn get_open_api_router() -> ApiRouter {
     router
 }
 
-// async fn serve_docs(Extension(api): Extension<OpenApi>) -> impl IntoApiResponse {
-async fn serve_docs(Extension(open_api): Extension<OpenApi>) -> impl IntoApiResponse {
+async fn serve_docs(Extension(open_api): Extension<Arc<OpenApi>>) -> impl IntoApiResponse {
     Json(open_api).into_response()
 }

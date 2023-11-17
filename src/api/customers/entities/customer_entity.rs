@@ -1,8 +1,10 @@
 use crate::api::customers::types::{customer_from_db::CustomerFromDb, sex::Sex};
+use aide::OperationIo;
 use chrono::{DateTime, FixedOffset};
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, OperationIo)]
 #[serde(rename_all = "camelCase")]
 pub struct CustomerEntity {
     pub id: String,

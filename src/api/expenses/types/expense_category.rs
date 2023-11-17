@@ -1,8 +1,9 @@
+use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
 use prisma_client as prisma;
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema)]
 pub enum ExpenseCategory {
     #[serde(rename = "FOOD")]
     Food,

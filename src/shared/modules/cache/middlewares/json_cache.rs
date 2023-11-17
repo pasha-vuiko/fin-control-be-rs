@@ -71,7 +71,7 @@ where
         let Some(bearer_token) = bearer_token else {
             return false;
         };
-        
+
         let Ok(user) = self.auth_service.get_user(&bearer_token) else {
             return false;
         };
@@ -116,7 +116,7 @@ where
             let Ok(original_uri) = parts.extract::<OriginalUri>().await else {
                 let request = Request::from_parts(parts, body);
 
-                return inner.call(request).await
+                return inner.call(request).await;
             };
 
             let cache_key = original_uri.to_string();

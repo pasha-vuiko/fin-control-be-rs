@@ -1,5 +1,6 @@
-use axum::routing::get;
-use axum::Router;
+use aide::axum::routing::get;
+use aide::axum::{ApiRouter, IntoApiResponse};
+use axum::response::IntoResponse;
 use std::{env, sync::Arc};
 
 use crate::shared::errors::http_error::HttpError;
@@ -14,9 +15,9 @@ pub async fn get_router(
     prisma_client: Arc<PrismaClient>,
     redis_service: Arc<RedisService>,
     auth_service: Arc<Auth0Service>,
-) -> Router {
-    Router::new()
-        .route("/", get(root_handler))
+) -> ApiRouter {
+    ApiRouter::new()
+        .api_route("/", get(root_handler))
         .merge(customers::get_router(
             prisma_client.clone(),
             redis_service.clone(),
@@ -29,8 +30,8 @@ pub async fn get_router(
         ))
 }
 
-async fn root_handler() -> Result<String, HttpError> {
-    env::var("CARGO_PKG_VERSION")
+async fn root_handler() -> impl IntoApiResponse {
+    let response = env::var("CARGO_PKG_VERSION")
         .map(|app_ver| {
             let formatted_response = format!("App version: {}", app_ver);
 
@@ -40,5 +41,7 @@ async fn root_handler() -> Result<String, HttpError> {
             let err_msg = format!("Failed to get App Version: {}", err);
 
             HttpError::Internal(err_msg)
-        })
+        });
+
+    response.into_response()
 }

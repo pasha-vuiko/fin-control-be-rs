@@ -1,5 +1,6 @@
 use axum::extract::{Path, State};
-use axum::{Extension, Json};
+use axum::Extension;
+use axum_jsonschema::Json;
 use std::sync::Arc;
 
 use crate::api::customers::customers_service::CustomersService;
@@ -16,7 +17,7 @@ pub async fn find_one(
 ) -> Result<CustomerEntityJson, HttpError> {
     let found_customer = customers_service.find_one_by_id(&customer_id).await?;
 
-    Ok(found_customer.into())
+    Ok(Json(found_customer))
 }
 
 pub async fn find_one_by_user_id(
@@ -25,7 +26,7 @@ pub async fn find_one_by_user_id(
 ) -> Result<CustomerEntityJson, HttpError> {
     let found_customer = customers_service.find_one_by_user_id(&user.id).await?;
 
-    Ok(found_customer.into())
+    Ok(Json(found_customer))
 }
 
 pub async fn find_many(
@@ -33,7 +34,7 @@ pub async fn find_many(
 ) -> Result<CustomerEntitiesJson, HttpError> {
     let found_products = customers_service.find_many().await?;
 
-    Ok(found_products.into())
+    Ok(Json(found_products))
 }
 
 pub async fn create(
@@ -45,7 +46,7 @@ pub async fn create(
         .create(create_customer_dto, &user.id, &user.email)
         .await?;
 
-    Ok(created_customer.into())
+    Ok(Json(created_customer))
 }
 
 pub async fn update(
@@ -64,7 +65,7 @@ pub async fn update(
             .await?
     };
 
-    Ok(updated_customer.into())
+    Ok(Json(updated_customer))
 }
 
 pub async fn remove(
@@ -80,7 +81,7 @@ pub async fn remove(
             .await?
     };
 
-    Ok(deleted_customer.into())
+    Ok(Json(deleted_customer))
 }
 
 pub type CustomerEntityJson = Json<CustomerEntity>;

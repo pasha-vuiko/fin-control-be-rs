@@ -1,8 +1,6 @@
 use crate::api::customers::customers_repository::CustomerRepository;
-use axum::{
-    routing::{delete, get, patch, post},
-    Router,
-};
+use aide::axum::routing::{delete, get, patch, post};
+use aide::axum::ApiRouter;
 use std::sync::Arc;
 
 use crate::api::customers::{
@@ -27,7 +25,7 @@ pub fn get_router(
     prisma_client: Arc<PrismaClient>,
     redis_service: Arc<RedisService>,
     auth_service: Arc<Auth0Service>,
-) -> Router {
+) -> ApiRouter {
     let customers_repository = Arc::new(CustomerRepository::new(prisma_client));
     let customers_service = Arc::new(CustomersService::new(customers_repository));
     let api_state = CustomersApiState { customers_service };
@@ -35,39 +33,39 @@ pub fn get_router(
     let auth_layer = AuthLayer::new(auth_service.clone());
     let cache_layer = JsonCacheLayer::new(redis_service, auth_service);
 
-    let routes = Router::new()
-        .route(
+    let routes = ApiRouter::new()
+        .api_route(
             "/self",
             get(customers_handlers::find_one_by_user_id)
                 .route_layer(cache_layer.clone())
                 .route_layer(auth_layer.verify(vec![Roles::Customer])),
         )
-        .route(
+        .api_route(
             "/:id",
             get(customers_handlers::find_one).route_layer(auth_layer.verify(vec![Roles::Admin])),
         )
-        .route(
+        .api_route(
             "/",
             get(customers_handlers::find_many)
                 .route_layer(cache_layer)
                 .route_layer(auth_layer.verify(vec![Roles::Admin])),
         )
-        .route(
+        .api_route(
             "/",
             post(customers_handlers::create).route_layer(auth_layer.verify(vec![Roles::Customer])),
         )
-        .route(
+        .api_route(
             "/:id",
             patch(customers_handlers::update)
                 .route_layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
         )
-        .route(
+        .api_route(
             "/:id",
             delete(customers_handlers::remove)
                 .route_layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
         );
 
-    Router::new()
+    ApiRouter::new()
         .nest("/customers", routes)
         .with_state(api_state)
 }

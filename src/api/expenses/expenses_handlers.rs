@@ -5,7 +5,8 @@ use crate::api::expenses::expenses_service::ExpensesService;
 use crate::shared::errors::http_error::HttpError;
 use crate::shared::modules::auth::structs::user::User;
 use axum::extract::{Path, State};
-use axum::{Extension, Json};
+use axum::Extension;
+use axum_jsonschema::Json;
 use std::sync::Arc;
 
 pub async fn find_many(
@@ -18,7 +19,7 @@ pub async fn find_many(
         expenses_service.find_many_as_customer(&user.id).await?
     };
 
-    Ok(found_expenses.into())
+    Ok(Json(found_expenses))
 }
 
 pub async fn find_one(
@@ -34,7 +35,7 @@ pub async fn find_one(
             .await?
     };
 
-    Ok(found_expense.into())
+    Ok(Json(found_expense))
 }
 
 pub async fn create_many(
@@ -46,7 +47,7 @@ pub async fn create_many(
         .create_many(expense_entities, &user.id)
         .await?;
 
-    Ok(created_expenses.into())
+    Ok(Json(created_expenses))
 }
 
 pub async fn update_one(
@@ -59,7 +60,7 @@ pub async fn update_one(
         .update(&expense_id, update_dto, &user.id)
         .await?;
 
-    Ok(updated_expense.into())
+    Ok(Json(updated_expense))
 }
 
 pub async fn delete_one(
@@ -69,7 +70,7 @@ pub async fn delete_one(
 ) -> Result<ExpenseEntityJson, HttpError> {
     let deleted_expense = expenses_service.delete(&expense_id, &user.id).await?;
 
-    Ok(deleted_expense.into())
+    Ok(Json(deleted_expense))
 }
 
 pub type ExpenseEntityJson = Json<ExpenseEntity>;

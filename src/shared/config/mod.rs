@@ -1,22 +1,17 @@
-use serde::Deserialize;
+use dotenv::dotenv;
 
-pub mod tracing;
+mod errors;
+mod types;
 
-#[derive(Deserialize, Debug, Clone)]
-pub struct AppConfig {
-    // App
-    pub port: u16,
+pub use errors::ConfigErrors;
+pub use types::*;
 
-    // Redis
-    pub redis_sentinels: String,
-    pub redis_name: String,
-    pub redis_host: String,
-    pub redis_port: u16,
-    pub redis_ttl: usize, // seconds
+pub fn get_config() -> Result<AppConfig, ConfigErrors> {
+    // fetch ENV vars from the file if exists
+    dotenv().map_err(|err| ConfigErrors::ConfigFileError(err.to_string()))?;
 
-    // Auth0
-    pub auth_auth0_domain: String,
+    let config =
+        envy::from_env::<AppConfig>().map_err(|err| ConfigErrors::ParseError(err.to_string()))?;
 
-    // Database
-    pub database_url: String,
+    Ok(config)
 }

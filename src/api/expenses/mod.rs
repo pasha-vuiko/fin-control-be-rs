@@ -1,5 +1,5 @@
-use axum::routing::{delete, get, patch, post};
-use axum::Router;
+use aide::axum::routing::{delete, get, patch, post};
+use aide::axum::ApiRouter;
 use std::sync::Arc;
 
 use crate::api::customers::customers_repository::CustomerRepository;
@@ -28,7 +28,7 @@ pub fn get_router(
     prisma_client: Arc<PrismaClient>,
     redis_service: Arc<RedisService>,
     auth_service: Arc<Auth0Service>,
-) -> Router {
+) -> ApiRouter {
     let customers_repository = Arc::new(CustomerRepository::new(prisma_client.clone()));
     let customers_service = Arc::new(CustomersService::new(customers_repository));
 
@@ -40,36 +40,36 @@ pub fn get_router(
     let auth_layer = AuthLayer::new(auth_service.clone());
     let cache_layer = JsonCacheLayer::new(redis_service, auth_service);
 
-    let routes = Router::new()
-        .route(
+    let routes = ApiRouter::new()
+        .api_route(
             "/",
             get(expenses_handlers::find_many)
                 .route_layer(cache_layer.clone())
                 .route_layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
         )
-        .route(
+        .api_route(
             "/:id",
             get(expenses_handlers::find_one)
                 .route_layer(cache_layer)
                 .route_layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
         )
-        .route(
+        .api_route(
             "/",
             post(expenses_handlers::create_many)
                 .route_layer(auth_layer.verify(vec![Roles::Customer])),
         )
-        .route(
+        .api_route(
             "/:id",
             patch(expenses_handlers::update_one)
                 .route_layer(auth_layer.verify(vec![Roles::Customer])),
         )
-        .route(
+        .api_route(
             "/:id",
             delete(expenses_handlers::delete_one)
                 .route_layer(auth_layer.verify(vec![Roles::Customer])),
         );
 
-    Router::new()
+    ApiRouter::new()
         .nest("/expenses", routes)
         .with_state(api_state)
 }

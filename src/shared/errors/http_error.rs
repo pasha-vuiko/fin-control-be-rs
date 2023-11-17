@@ -10,8 +10,9 @@ use schemars::JsonSchema;
 use serde::Serialize;
 use serde_json::json;
 use std::fmt::{Display, Formatter};
+use aide::OperationIo;
 
-#[derive(Serialize, Debug, Error, JsonSchema)]
+#[derive(Serialize, Debug, Error, JsonSchema, OperationIo)]
 pub enum HttpError {
     #[error("{0}")]
     NotFound(String),
