@@ -9,20 +9,33 @@ use tower_http::{
 use tower_request_id::RequestId;
 use tracing::metadata::LevelFilter;
 use tracing::{error_span, Span};
-use tracing_subscriber::{filter, layer::SubscriberExt, util::SubscriberInitExt, Layer};
+use tracing_subscriber::{filter, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer};
 
 pub fn init_logger(format: &LogFormat, level: &LogLevel) {
     let log_style_layer = tracing_subscriber::fmt::layer();
-    let log_filter = filter::Targets::new().with_default(LevelFilter::from(level));
-
-    let tracing_subscriber_registry = match format {
-        LogFormat::Pretty => tracing_subscriber::registry()
-            .with(log_style_layer.pretty().with_filter(log_filter).boxed()),
-        LogFormat::Json => tracing_subscriber::registry()
-            .with(log_style_layer.json().with_filter(log_filter).boxed()),
+    let tracing_layer = match format {
+        LogFormat::Pretty => log_style_layer.pretty().boxed(),
+        LogFormat::Json => log_style_layer.json().boxed(),
     };
 
-    tracing_subscriber_registry.init();
+    let global_log_level_filter = filter::Targets::new().with_default(LevelFilter::from(level));
+    let crates_log_level_filter = EnvFilter::builder()
+        .with_default_directive(LevelFilter::DEBUG.into())
+        .from_env()
+        .expect("Failed to get env filter")
+        .add_directive(
+            "hyper::proto=info"
+                .parse()
+                .expect("failed to crate log filter config"),
+        );
+
+    tracing_subscriber::registry()
+        .with(
+            tracing_layer
+                .with_filter(crates_log_level_filter)
+                .with_filter(global_log_level_filter),
+        )
+        .init();
 }
 
 pub type TraceLayerAlias =
