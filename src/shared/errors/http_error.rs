@@ -1,5 +1,6 @@
 use crate::shared::modules::auth::errors::AuthError;
 use crate::shared::modules::cache::errors::CacheError;
+use aide::OperationIo;
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
@@ -10,7 +11,6 @@ use schemars::JsonSchema;
 use serde::Serialize;
 use serde_json::json;
 use std::fmt::{Display, Formatter};
-use aide::OperationIo;
 
 #[derive(Serialize, Debug, Error, JsonSchema, OperationIo)]
 pub enum HttpError {

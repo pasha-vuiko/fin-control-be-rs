@@ -7,4 +7,4 @@ edition = "2021"
 
 [dependencies]
 prisma-client-rust = { git = "https://github.com/Brendonovich/prisma-client-rust", tag = "0.6.10", default-features = false, features = ["migrations", "postgresql"] }
-serde = { version = "1.0.192", features = ["derive"] }
+serde = { version = "1.0.193", features = ["derive"] }

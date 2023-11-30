@@ -16,6 +16,36 @@ pub struct Auth0Service {
     issuer: String,
 }
 
+impl AuthService for Auth0Service {
+    fn authenticate(&self, token: &str, required_roles: Vec<Roles>) -> Result<User, AuthError> {
+        let claims = self.validate_token(token)?;
+        tracing::debug!("Token is validated successfully");
+
+        let roles_match = Self::check_roles_match(&required_roles, &claims.roles);
+
+        if roles_match {
+            Ok(claims.into())
+        } else {
+            Err(AuthError::InvalidUserRoles(
+                "User is not authorized to access this resource".into(),
+            ))
+        }
+    }
+
+    fn get_user(&self, token: &str) -> Result<User, AuthError> {
+        let parts = token.splitn(3, '.').collect::<Vec<&str>>();
+        let claims_part = parts.get(1);
+
+        let Some(&claims_part) = claims_part else {
+            return Err(AuthError::InvalidToken("invalid token".into()));
+        };
+
+        let jwt_claims: Auth0JwtClaims = Auth0Service::deserialize_jwt_part(claims_part)?;
+
+        Ok(jwt_claims.into())
+    }
+}
+
 impl Auth0Service {
     pub async fn from_auth_domain(jwks_domain: &str) -> Result<Self, HttpError> {
         let issuer = format!("https://{}/", jwks_domain);
@@ -26,7 +56,9 @@ impl Auth0Service {
 
         Ok(Self { jwks, issuer })
     }
+}
 
+impl Auth0Service {
     async fn fetch_jwks(uri: &str) -> Result<JWKS, Box<dyn std::error::Error>> {
         let res = reqwest::get(uri).await?;
         let val = res.json::<JWKS>().await?;
@@ -103,35 +135,5 @@ impl Auth0Service {
 
             AuthError::InvalidToken(message.into())
         })
-    }
-}
-
-impl AuthService for Auth0Service {
-    fn authenticate(&self, token: &str, required_roles: Vec<Roles>) -> Result<User, AuthError> {
-        let claims = self.validate_token(token)?;
-        tracing::debug!("Token is validated successfully");
-
-        let roles_match = Self::check_roles_match(&required_roles, &claims.roles);
-
-        if roles_match {
-            Ok(claims.into())
-        } else {
-            Err(AuthError::InvalidUserRoles(
-                "User is not authorized to access this resource".into(),
-            ))
-        }
-    }
-
-    fn get_user(&self, token: &str) -> Result<User, AuthError> {
-        let parts = token.splitn(3, '.').collect::<Vec<&str>>();
-        let claims_part = parts.get(1);
-
-        let Some(&claims_part) = claims_part else {
-            return Err(AuthError::InvalidToken("invalid token".into()));
-        };
-
-        let jwt_claims: Auth0JwtClaims = Auth0Service::deserialize_jwt_part(claims_part)?;
-
-        Ok(jwt_claims.into())
     }
 }

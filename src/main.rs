@@ -1,15 +1,15 @@
 use aide::axum::ApiRouter;
 use axum::Extension;
-use std::{env, net::SocketAddr, sync::Arc};
-use tower_request_id::RequestIdLayer;
+use std::{env, sync::Arc};
 
 mod api;
 use crate::shared::config::get_config;
 
 mod shared;
 use crate::shared::handlers::handle_404_resource;
-use crate::shared::logger;
 use crate::shared::modules::auth::services::auth0::Auth0Service;
+use crate::shared::modules::logger;
+use crate::shared::modules::logger::middlewares::get_request_id_layer;
 use crate::shared::modules::open_api::{get_api_docs, get_open_api, get_open_api_router};
 use crate::shared::modules::redis::RedisServiceBuilder;
 
@@ -52,7 +52,7 @@ async fn main() {
         .layer(Extension(Arc::new(open_api)))
         .fallback(handle_404_resource)
         .layer(logger::get_logger_layer())
-        .layer(RequestIdLayer);
+        .layer(get_request_id_layer());
 
     tracing::info!("App version: {}", env::var("CARGO_PKG_VERSION").unwrap());
     tracing::info!(
@@ -61,9 +61,12 @@ async fn main() {
     );
 
     // Run our application
-    let addr = SocketAddr::from(([127, 0, 0, 1], config.port));
-    axum::Server::bind(&addr)
-        .serve(app.into_make_service())
+    let addr = format!("127.0.0.1:{}", config.port);
+    let listener = tokio::net::TcpListener::bind(addr)
+        .await
+        .expect("Failed to bind port");
+
+    axum::serve(listener, app.into_make_service())
         .await
         .expect("Failed to start server");
 }

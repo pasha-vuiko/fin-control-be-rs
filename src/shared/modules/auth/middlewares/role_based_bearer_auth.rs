@@ -1,4 +1,4 @@
-use axum::body::BoxBody;
+use axum::body::Body;
 use axum::http::Request;
 use axum::response::IntoResponse;
 use std::sync::Arc;
@@ -42,7 +42,7 @@ impl AuthVerify {
 }
 
 impl<B> ValidateRequest<B> for AuthVerify {
-    type ResponseBody = BoxBody;
+    type ResponseBody = Body;
 
     fn validate(
         &mut self,

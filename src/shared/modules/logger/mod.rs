@@ -1,12 +1,13 @@
 pub mod mappings;
+pub mod middlewares;
 
 use crate::shared::config::{LogFormat, LogLevel};
+use crate::shared::modules::logger::middlewares::X_REQUEST_ID_HEADER_NAME;
 use axum::{body::Body, http::Request};
 use tower_http::{
     classify::{ServerErrorsAsFailures, SharedClassifier},
     trace::TraceLayer,
 };
-use tower_request_id::RequestId;
 use tracing::metadata::LevelFilter;
 use tracing::{error_span, Span};
 use tracing_subscriber::{filter, layer::SubscriberExt, util::SubscriberInitExt, EnvFilter, Layer};
@@ -45,10 +46,16 @@ pub fn get_logger_layer() -> TraceLayerAlias {
     TraceLayer::new_for_http().make_span_with(|request: &Request<Body>| {
         // We get the request id from the extensions
         let request_id = request
-            .extensions()
-            .get::<RequestId>()
-            .map(ToString::to_string)
+            .headers()
+            .iter()
+            .find(|&(header_name, _)| header_name == X_REQUEST_ID_HEADER_NAME)
+            .map(|(_, request_id_header_value)| request_id_header_value)
+            .map(|request_id| request_id.to_str())
+            .transpose()
+            .ok()
+            .flatten()
             .unwrap_or_else(|| "unknown".into());
+
         // And then we put it along with other information into the `request` span
         error_span!(
             "request",
