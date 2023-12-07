@@ -5,7 +5,6 @@ use axum::http::{header, Method, Request};
 use axum::response::{IntoResponse, Response};
 use axum::RequestPartsExt;
 use futures_util::future::BoxFuture;
-use futures_util::StreamExt;
 use std::sync::Arc;
 use std::task::{Context, Poll};
 use tower::{Layer, Service};
@@ -160,9 +159,9 @@ async fn set_response_cache<R>(
 where
     R: CacheService + Send + Sync,
 {
-    let (response_data, _) = response.into_body().into_data_stream().into_future().await;
+    let response_data = axum::body::to_bytes(response.into_body(), usize::MAX).await;
 
-    if let Some(Ok(ref response_body_bytes)) = response_data {
+    if let Ok(ref response_body_bytes) = response_data {
         let response_body_vec = response_body_bytes.to_vec();
 
         if let Ok(response_body_str) = String::from_utf8(response_body_vec) {
@@ -184,12 +183,11 @@ where
     }
 
     response_data
-        .map(|data| {
-            data.map_err(|_| HttpError::Internal("Internal server error".to_string()))
-                .into_response()
-        })
-        .unwrap_or_else(|| {
-            tracing::error!("Cache for endpoint '{}' is failed to set", cache_key);
+        .map(|data| data.into_response())
+        .unwrap_or_else(|err| {
+            tracing::error!(
+                "Cache for endpoint '{cache_key}' is failed to set, because of err: '{err}'"
+            );
 
             HttpError::Internal("Internal server error".to_string()).into_response()
         })

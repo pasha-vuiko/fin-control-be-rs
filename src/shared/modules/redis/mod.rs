@@ -31,7 +31,7 @@ impl RedisServiceBuilder {
         let redis_client = redis::Client::open(redis_uri)
             .map_err(|err| RedisServiceError::Client(err.to_string()))?;
         let redis_connection_manager = redis_client
-            .get_tokio_connection_manager()
+            .get_connection_manager()
             .await
             .map_err(|err| RedisServiceError::ConnectionManager(err.to_string()))?;
 

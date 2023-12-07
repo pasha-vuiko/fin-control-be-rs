@@ -69,7 +69,7 @@ impl CacheService for RedisService {
         let redis_result: RedisResult<(String, i32)> = redis::pipe()
             .atomic()
             .set(key, &serialized_value)
-            .expire(key, ttl)
+            .expire(key, ttl as i64)
             .query_async(&mut connection_manager)
             .await;
 
@@ -93,7 +93,7 @@ impl CacheService for RedisService {
         let redis_result: RedisResult<(String, i32)> = redis::pipe()
             .atomic()
             .set(key, value)
-            .expire(key, ttl)
+            .expire(key, ttl as i64)
             .query_async(&mut connection_manager)
             .await;
 

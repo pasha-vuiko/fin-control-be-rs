@@ -66,7 +66,7 @@ version = "0.13.0"
 source = "git+https://github.com/tamasfe/aide?branch=master#6eaa0580e876c43362857cbe7421b1000f77bbda"
 dependencies = [
  "aide-macros",
- "axum 0.7.1",
+ "axum 0.7.2",
  "axum-extra",
  "bytes",
  "cfg-if",
@@ -196,12 +196,12 @@ dependencies = [
 
 [[package]]
 name = "axum"
-version = "0.7.1"
+version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "810a80b128d70e6ed2bdf3fe8ed72c0ae56f5f5948d01c2753282dd92a84fce8"
+checksum = "202651474fe73c62d9e0a56c6133f7a0ff1dc1c8cf7a5b03381af2a26553ac9d"
 dependencies = [
  "async-trait",
- "axum-core 0.4.0",
+ "axum-core 0.4.1",
  "axum-macros",
  "bytes",
  "futures-util",
@@ -247,9 +247,9 @@ dependencies = [
 
 [[package]]
 name = "axum-core"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "de0ddc355eab88f4955090a823715df47acf0b7660aab7a69ad5ce6301ee3b73"
+checksum = "77cb22c689c44d4c07b0ab44ebc25d69d8ae601a2f28fb8d672d344178fa17aa"
 dependencies = [
  "async-trait",
  "bytes",
@@ -271,8 +271,8 @@ version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "523ae92256049a3b02d3bb4df80152386cd97ddba0c8c5077619bdc8c4b1859b"
 dependencies = [
- "axum 0.7.1",
- "axum-core 0.4.0",
+ "axum 0.7.2",
+ "axum-core 0.4.1",
  "bytes",
  "futures-util",
  "http 1.0.0",
@@ -293,7 +293,7 @@ source = "git+https://github.com/tamasfe/aide?branch=master#6eaa0580e876c4336285
 dependencies = [
  "aide",
  "async-trait",
- "axum 0.7.1",
+ "axum 0.7.2",
  "http 1.0.0",
  "http-body 1.0.0",
  "itertools 0.12.0",
@@ -969,7 +969,7 @@ dependencies = [
  "aide",
  "alcoholic_jwt",
  "async-trait",
- "axum 0.7.1",
+ "axum 0.7.2",
  "axum-jsonschema",
  "axum-macros",
  "base64 0.21.5",
@@ -3029,9 +3029,9 @@ dependencies = [
 
 [[package]]
 name = "redis"
-version = "0.23.3"
+version = "0.24.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f49cdc0bb3f412bf8e7d1bd90fe1d9eb10bc5c399ba90973c14662a27b3f8ba"
+checksum = "c580d9cbbe1d1b479e8d67cf9daf6a62c957e6846048408b80b43ac3f6af84cd"
 dependencies = [
  "arc-swap",
  "async-trait",
