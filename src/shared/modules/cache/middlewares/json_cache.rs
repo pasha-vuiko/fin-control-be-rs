@@ -164,22 +164,15 @@ where
     if let Ok(ref response_body_bytes) = response_data {
         let response_body_vec = response_body_bytes.to_vec();
 
-        if let Ok(response_body_str) = String::from_utf8(response_body_vec) {
-            let set_result = cache_service.set_str(cache_key, &response_body_str).await;
+        let set_result = cache_service.set_bytes(cache_key, &response_body_vec).await;
 
-            match set_result {
-                Ok(_) => {
-                    tracing::debug!("Cache for endpoint '{}' is set successfully", cache_key)
-                }
-                Err(err) => tracing::warn!(
-                    "Cache for endpoint '{}' is failed to set with err: '{}'",
-                    cache_key,
-                    err
-                ),
-            };
-
-            return response_body_str.into_response();
+        if let Err(err) = set_result {
+            tracing::warn!("Cache for endpoint '{cache_key}' is failed to set with err: '{err}'");
+        } else {
+            tracing::debug!("Cache for endpoint '{cache_key}' is set successfully");
         }
+
+        return response_body_vec.into_response();
     }
 
     response_data

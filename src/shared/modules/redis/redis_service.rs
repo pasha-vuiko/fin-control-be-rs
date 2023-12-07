@@ -78,15 +78,40 @@ impl CacheService for RedisService {
             .map_err(|err| CacheError::Unknown(err.to_string()))
     }
 
+    // TODO Possibly move to the default impl
     async fn set_str(&self, key: &str, value: &str) -> Result<String, CacheError> {
         // TODO Find out if 0 TTL is valid value
         self.set_str_with_ttl(key, value, self.default_ttl).await
+    }
+
+    // TODO Possibly move to the default impl
+    async fn set_bytes(&self, key: &str, value: &[u8]) -> Result<String, CacheError> {
+        self.set_bytes_with_ttl(key, value, self.default_ttl).await
     }
 
     async fn set_str_with_ttl(
         &self,
         key: &str,
         value: &str,
+        ttl: usize,
+    ) -> Result<String, CacheError> {
+        let mut connection_manager = self.connection_manager.clone();
+        let redis_result: RedisResult<(String, i32)> = redis::pipe()
+            .atomic()
+            .set(key, value)
+            .expire(key, ttl as i64)
+            .query_async(&mut connection_manager)
+            .await;
+
+        redis_result
+            .map(|result| result.0)
+            .map_err(|err| CacheError::Unknown(err.to_string()))
+    }
+
+    async fn set_bytes_with_ttl(
+        &self,
+        key: &str,
+        value: &[u8],
         ttl: usize,
     ) -> Result<String, CacheError> {
         let mut connection_manager = self.connection_manager.clone();
@@ -113,11 +138,10 @@ impl CacheService for RedisService {
             let set_result = self.set(cache_key, &func_value).await;
 
             if set_result.is_ok() {
-                tracing::debug!("Cache for endpoint '{}' is set successfully", cache_key)
+                tracing::debug!("Cache for endpoint '{cache_key}' is set successfully")
             } else {
                 tracing::warn!(
-                    "Cache for endpoint '{}' is failed to set with err: '{}'",
-                    cache_key,
+                    "Cache for endpoint '{cache_key}' is failed to set with err: '{}'",
                     set_result.unwrap_err()
                 )
             }

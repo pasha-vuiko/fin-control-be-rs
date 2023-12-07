@@ -48,8 +48,8 @@ impl AuthService for Auth0Service {
 
 impl Auth0Service {
     pub async fn from_auth_domain(jwks_domain: &str) -> Result<Self, HttpError> {
-        let issuer = format!("https://{}/", jwks_domain);
-        let jwks_url = format!("{}{}", issuer, ".well-known/jwks.json");
+        let issuer = format!("https://{jwks_domain}/");
+        let jwks_url = format!("{issuer}.well-known/jwks.json");
         let jwks = Self::fetch_jwks(&jwks_url).await?;
 
         tracing::debug!("JWKS was successfully fetched");
@@ -78,9 +78,8 @@ impl Auth0Service {
         }
 
         tracing::debug!(
-            "User does not have one of required roles: {:?}, user roles: {:?}",
-            required_roles,
-            user_roles
+            "User does not have one of required \
+            roles: {required_roles:?}, user roles: {user_roles:?}"
         );
 
         false
@@ -96,7 +95,7 @@ impl Auth0Service {
         token_kid(token)?
             .ok_or_else(|| {
                 let message = "Token is not valid, Key ID is not found in the token";
-                tracing::debug!("{}", message);
+                tracing::debug!("{message}");
 
                 AuthError::InvalidToken(message.into())
             })
@@ -121,7 +120,7 @@ impl Auth0Service {
 
     fn str_claims_to_claims(str_claims: &str) -> Result<Auth0JwtClaims, AuthError> {
         serde_json::from_str::<Auth0JwtClaims>(str_claims).map_err(|err| {
-            let msg = format!("Error while deserializing JWT claims: {}", err);
+            let msg = format!("Error while deserializing JWT claims: {err}");
             tracing::debug!(msg);
 
             AuthError::InvalidToken(msg)
@@ -131,7 +130,7 @@ impl Auth0Service {
     fn get_jwk_by_kid(&self, kid: &str) -> Result<&alcoholic_jwt::JWK, AuthError> {
         self.jwks.find(kid).ok_or_else(|| {
             let message = "Token is not valid, Specified key not found in JWKS set";
-            tracing::debug!("{}", message);
+            tracing::debug!("{message}");
 
             AuthError::InvalidToken(message.into())
         })

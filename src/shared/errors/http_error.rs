@@ -62,8 +62,8 @@ impl IntoResponse for HttpError {
 }
 
 impl From<AuthError> for HttpError {
-    fn from(value: AuthError) -> Self {
-        match value {
+    fn from(auth_error: AuthError) -> Self {
+        match auth_error {
             AuthError::NoAuthHeaderFound(msg) => Self::Unauthorized(msg),
             AuthError::InvalidAuthHeader(msg) => Self::Unauthorized(msg),
             AuthError::InvalidToken(msg) => Self::Unauthorized(msg),
@@ -73,8 +73,8 @@ impl From<AuthError> for HttpError {
 }
 
 impl From<CacheError> for HttpError {
-    fn from(value: CacheError) -> Self {
-        match value {
+    fn from(cache_error: CacheError) -> Self {
+        match cache_error {
             CacheError::KeyNotFound(msg) => Self::Internal(msg),
             CacheError::Unknown(msg) => Self::Internal(msg),
             CacheError::FailedToParseResponse(msg) => Self::Internal(msg),
@@ -83,20 +83,20 @@ impl From<CacheError> for HttpError {
 }
 
 impl From<prisma_client_rust::QueryError> for HttpError {
-    fn from(value: prisma_client_rust::QueryError) -> Self {
-        Self::Internal(format!("Prisma QueryError: {}", value))
+    fn from(prisma_query_error: prisma_client_rust::QueryError) -> Self {
+        Self::Internal(format!("Prisma QueryError: {prisma_query_error}"))
     }
 }
 
 impl From<serde_json::Error> for HttpError {
-    fn from(value: serde_json::Error) -> Self {
-        Self::Internal(format!("Serde JSON Error: {}", value))
+    fn from(json_deserialization_error: serde_json::Error) -> Self {
+        Self::Internal(format!("Serde JSON Error: {json_deserialization_error}"))
     }
 }
 
 impl From<Box<dyn std::error::Error>> for HttpError {
-    fn from(value: Box<dyn std::error::Error>) -> Self {
-        Self::Internal(format!("Error: {}", value))
+    fn from(std_error: Box<dyn std::error::Error>) -> Self {
+        Self::Internal(format!("Error: {std_error}"))
     }
 }
 

@@ -29,7 +29,7 @@ impl ExpensesRepositoryTrait for ExpensesRepository {
             .find_unique(expense::id::equals(id.into()))
             .exec()
             .await?
-            .ok_or_else(|| HttpError::NotFound(format!("Expense with id {} not found", id)))?
+            .ok_or_else(|| HttpError::NotFound(format!("Expense with id {id} not found")))?
             .into();
 
         Ok(found_expense)

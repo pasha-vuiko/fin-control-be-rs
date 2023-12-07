@@ -16,8 +16,7 @@ impl TryFrom<String> for Roles {
             "admin" | "ADMIN" | "Admin" => Ok(Roles::Admin),
             "customer" | "CUSTOMER" | "Customer" => Ok(Roles::Customer),
             _ => Err(HttpError::Internal(format!(
-                "Role '{}' is not supported",
-                value
+                "Role '{value}' is not supported"
             ))),
         }
     }

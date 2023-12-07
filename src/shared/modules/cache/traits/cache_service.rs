@@ -21,10 +21,19 @@ pub trait CacheService {
 
     async fn set_str(&self, key: &str, value: &str) -> Result<String, CacheError>;
 
+    async fn set_bytes(&self, key: &str, value: &[u8]) -> Result<String, CacheError>;
+
     async fn set_str_with_ttl(
         &self,
         key: &str,
         value: &str,
+        ttl: usize,
+    ) -> Result<String, CacheError>;
+
+    async fn set_bytes_with_ttl(
+        &self,
+        key: &str,
+        value: &[u8],
         ttl: usize,
     ) -> Result<String, CacheError>;
 

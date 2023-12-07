@@ -46,8 +46,7 @@ impl ExpensesService {
 
         if expense_from_db.customer_id != customer.id {
             return Err(HttpError::NotFound(format!(
-                "Expense with id {} not found",
-                id
+                "Expense with id {id} not found"
             )));
         }
 

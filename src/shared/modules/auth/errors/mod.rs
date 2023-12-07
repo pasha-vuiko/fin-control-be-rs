@@ -13,7 +13,7 @@ pub enum AuthError {
 }
 
 impl From<alcoholic_jwt::ValidationError> for AuthError {
-    fn from(value: alcoholic_jwt::ValidationError) -> Self {
-        Self::InvalidToken(format!("JWT Validation Error: {}", value))
+    fn from(validation_error: alcoholic_jwt::ValidationError) -> Self {
+        Self::InvalidToken(format!("JWT Validation Error: {validation_error}",))
     }
 }

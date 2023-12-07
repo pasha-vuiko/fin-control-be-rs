@@ -29,9 +29,7 @@ impl CustomersRepositoryTrait for CustomerRepository {
             .find_unique(customer::id::equals(id.into()))
             .exec()
             .await?
-            .ok_or_else(|| {
-                HttpError::NotFound(format!("Customer with id '{}' was not found", id))
-            })?;
+            .ok_or_else(|| HttpError::NotFound(format!("Customer with id '{id}' was not found")))?;
 
         Ok(customer_from_prisma.into())
     }
@@ -44,7 +42,7 @@ impl CustomersRepositoryTrait for CustomerRepository {
             .exec()
             .await?
             .ok_or_else(|| {
-                HttpError::NotFound(format!("Customer with user_id '{}' was not found", user_id))
+                HttpError::NotFound(format!("Customer with user_id '{user_id}' was not found"))
             })?;
 
         Ok(customer_from_prisma.into())

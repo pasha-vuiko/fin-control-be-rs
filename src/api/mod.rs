@@ -33,12 +33,12 @@ pub async fn get_router(
 async fn root_handler() -> impl IntoApiResponse {
     let response = env::var("CARGO_PKG_VERSION")
         .map(|app_ver| {
-            let formatted_response = format!("App version: {}", app_ver);
+            let formatted_response = format!("App version: {app_ver}");
 
             formatted_response
         })
         .map_err(|err| {
-            let err_msg = format!("Failed to get App Version: {}", err);
+            let err_msg = format!("Failed to get App Version: {err}");
 
             HttpError::Internal(err_msg)
         });

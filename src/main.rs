@@ -54,14 +54,14 @@ async fn main() {
         .layer(logger::get_logger_layer())
         .layer(get_request_id_layer());
 
-    tracing::info!("App version: {}", env::var("CARGO_PKG_VERSION").unwrap());
-    tracing::info!(
-        "Starting HTTP server: go to http://127.0.0.1:{}",
-        config.port
-    );
+    let app_version = env::var("CARGO_PKG_VERSION").expect("Failed to get app version");
+    let port = config.port;
+
+    tracing::info!("App version: {app_version}");
+    tracing::info!("Starting HTTP server: go to http://127.0.0.1:{port}",);
 
     // Run our application
-    let addr = format!("127.0.0.1:{}", config.port);
+    let addr = format!("127.0.0.1:{port}");
     let listener = tokio::net::TcpListener::bind(addr)
         .await
         .expect("Failed to bind port");
