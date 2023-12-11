@@ -2,5 +2,3 @@
 prisma = "run -p prisma-cli --"
 
 [patch.crates-io]
-aide = { git = "https://github.com/tamasfe/aide", branch = "master", package = "aide" }
-axum-jsonschema = { git = "https://github.com/tamasfe/aide", branch = "master", package = "axum-jsonschema" }
