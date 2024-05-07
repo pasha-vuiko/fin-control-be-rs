@@ -16,7 +16,6 @@ pub struct UpdateCustomerDto {
 
     pub birthdate: Option<DateTime<FixedOffset>>,
 
-    #[validate(phone)]
     pub phone: Option<String>,
 
     pub sex: Option<Sex>,

@@ -1,5 +1,4 @@
 use alcoholic_jwt::{token_kid, validate, Validation, JWKS};
-use base64;
 use base64::Engine;
 use serde::de::DeserializeOwned;
 
