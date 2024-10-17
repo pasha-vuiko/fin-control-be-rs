@@ -15,8 +15,8 @@ members = [
 axum = { version = "0.7.7", features = ["macros"] }
 axum-macros = { version = "0.4.2" }
 tokio = { version = "1.40.0", features = ["macros"] }
-tower = "0.4.13"
-tower-http = { version = "0.5.2", features = ["trace", "auth", "request-id"] }
+tower = "0.5.1"
+tower-http = { version = "0.6.1", features = ["trace", "auth", "request-id"] }
 
 # Serialization/Deserialization
 serde_json = "1.0.128"
@@ -40,7 +40,7 @@ prisma-client = { path = "./prisma-client" }
 reqwest = { version = "0.12.8", features = ["json"] }
 
 # Redis
-redis = { version = "0.25.4", features = ["tokio-comp", "connection-manager"] }
+redis = { version = "0.27.4", features = ["tokio-comp", "connection-manager"] }
 
 # Logger
 tracing-subscriber = { version = "0.3.18", features = ["env-filter", "json"] }
