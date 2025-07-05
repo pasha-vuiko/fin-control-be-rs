@@ -5,8 +5,7 @@ use crate::api::expenses::expenses_service::ExpensesService;
 use crate::shared::errors::http_error::HttpError;
 use crate::shared::modules::auth::structs::user::User;
 use axum::extract::{Path, State};
-use axum::Extension;
-use axum_jsonschema::Json;
+use axum::{Extension, Json};
 use std::sync::Arc;
 
 pub async fn find_many(

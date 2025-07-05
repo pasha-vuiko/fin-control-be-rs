@@ -1,6 +1,5 @@
 use axum::extract::{Path, State};
-use axum::Extension;
-use axum_jsonschema::Json;
+use axum::{Extension, Json};
 use std::sync::Arc;
 
 use crate::api::customers::customers_service::CustomersService;

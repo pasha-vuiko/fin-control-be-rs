@@ -48,7 +48,7 @@ pub fn get_router(
                 .route_layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
         )
         .api_route(
-            "/:id",
+            "/{id}",
             get(expenses_handlers::find_one)
                 .route_layer(cache_layer)
                 .route_layer(auth_layer.verify(vec![Roles::Admin, Roles::Customer])),
@@ -59,12 +59,12 @@ pub fn get_router(
                 .route_layer(auth_layer.verify(vec![Roles::Customer])),
         )
         .api_route(
-            "/:id",
+            "/{id}",
             patch(expenses_handlers::update_one)
                 .route_layer(auth_layer.verify(vec![Roles::Customer])),
         )
         .api_route(
-            "/:id",
+            "/{id}",
             delete(expenses_handlers::delete_one)
                 .route_layer(auth_layer.verify(vec![Roles::Customer])),
         );

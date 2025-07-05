@@ -1,22 +1,21 @@
 use aide::transform::TransformOpenApi;
 use aide::{
     axum::{
-        routing::{get, get_with},
         ApiRouter, IntoApiResponse,
+        routing::{get, get_with},
     },
     openapi::OpenApi,
     redoc::Redoc,
 };
-use axum::{response::IntoResponse, Extension};
-use axum_jsonschema::Json;
+use axum::{Extension, Json, response::IntoResponse};
 use std::sync::Arc;
 
 pub fn get_open_api() -> OpenApi {
-    aide::gen::on_error(|error| {
+    aide::generate::on_error(|error| {
         println!("init Open API error: {error}");
     });
-    aide::gen::extract_schemas(true);
-    aide::gen::infer_responses(true);
+    aide::generate::extract_schemas(true);
+    aide::generate::infer_responses(true);
 
     OpenApi::default()
 }
@@ -40,7 +39,7 @@ pub fn get_open_api_router() -> ApiRouter {
     // As a result, the `serve_redoc` route will
     // have the `text/html` content-type correctly set
     // with a 200 status.
-    aide::gen::infer_responses(true);
+    aide::generate::infer_responses(true);
 
     let router = ApiRouter::new()
         .api_route_with(
@@ -57,7 +56,7 @@ pub fn get_open_api_router() -> ApiRouter {
 
     // Afterwards we disable response inference because
     // it might be incorrect for other routes.
-    aide::gen::infer_responses(false);
+    aide::generate::infer_responses(false);
 
     router
 }
