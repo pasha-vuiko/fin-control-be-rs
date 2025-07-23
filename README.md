@@ -7,7 +7,7 @@ Back-end written with Rust for FinControl App
 Tech Stack:
 * [Axum](https://github.com/tokio-rs/axum) as a freamwork
 * [Auth0](https://auth0.com) as authorization service
-* [Prisma](https://github.com/Brendonovich/prisma-client-rust) as an ORM
+* [SeaORM](https://www.sea-ql.org/SeaORM/) as an ORM
 * [CockroachDB](https://www.cockroachlabs.com) as a primary DB
 * [Redis](https://redis.com) as DB for caching
 * [tower_http](https://github.com/tower-rs/tower-http) and [Tracing](https://github.com/tokio-rs/tracing) as a logger

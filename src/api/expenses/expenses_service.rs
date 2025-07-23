@@ -1,6 +1,6 @@
 use futures_util::future::try_join;
 use std::sync::Arc;
-
+use sea_orm::prelude::Decimal;
 use crate::api::customers::customers_service::CustomersService;
 use crate::api::expenses::dto::create_expense_db_dto::CreateExpenseDbDto;
 use crate::api::expenses::dto::create_expense_dto::CreateExpenseDto;
@@ -99,7 +99,7 @@ impl ExpensesService {
 
         let created_expenses_entities = self
             .expenses_repository
-            .create_many(create_dtos, &customer.id)
+            .create_many(create_dtos)
             .await?
             .into_iter()
             .map(Into::into)
@@ -141,7 +141,7 @@ impl ExpensesService {
     ) -> CreateExpenseDbDto {
         CreateExpenseDbDto {
             customer_id: customer_id.to_string(),
-            amount: create_dto.amount,
+            amount: Decimal::try_from(create_dto.amount).unwrap_or_default(),
             date: create_dto.date,
             category: create_dto.category,
         }

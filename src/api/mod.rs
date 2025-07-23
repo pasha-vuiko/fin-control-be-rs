@@ -1,30 +1,29 @@
-use aide::axum::routing::get;
-use aide::axum::{ApiRouter, IntoApiResponse};
-use axum::response::IntoResponse;
-use std::{env, sync::Arc};
-
 use crate::shared::errors::http_error::HttpError;
 use crate::shared::modules::auth::services::auth0::Auth0Service;
 use crate::shared::modules::redis::redis_service::RedisService;
-use prisma_client::PrismaClient;
+use aide::axum::routing::get;
+use aide::axum::{ApiRouter, IntoApiResponse};
+use axum::response::IntoResponse;
+use sea_orm::DatabaseConnection;
+use std::{env, sync::Arc};
 
 mod customers;
 mod expenses;
 
 pub async fn get_router(
-    prisma_client: Arc<PrismaClient>,
+    sea_orm_client: Arc<DatabaseConnection>,
     redis_service: Arc<RedisService>,
     auth_service: Arc<Auth0Service>,
 ) -> ApiRouter {
     ApiRouter::new()
         .api_route("/", get(root_handler))
         .merge(customers::get_router(
-            prisma_client.clone(),
+            sea_orm_client.clone(),
             redis_service.clone(),
             auth_service.clone(),
         ))
         .merge(expenses::get_router(
-            prisma_client,
+            sea_orm_client,
             redis_service,
             auth_service,
         ))

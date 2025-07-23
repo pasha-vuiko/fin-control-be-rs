@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::api::expenses::types::expense_category::ExpenseCategory;
-use prisma_client::expense;
+use crate::shared::modules::db::entities::expense;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct ExpenseFromDb {
@@ -14,12 +14,12 @@ pub struct ExpenseFromDb {
     pub updated_at: chrono::DateTime<chrono::FixedOffset>,
 }
 
-impl From<expense::Data> for ExpenseFromDb {
-    fn from(value: expense::Data) -> Self {
+impl From<expense::Model> for ExpenseFromDb {
+    fn from(value: expense::Model) -> Self {
         Self {
             id: value.id,
             customer_id: value.customer_id,
-            amount: value.amount,
+            amount: value.amount.try_into().unwrap_or_default(),
             date: value.date,
             category: value.category.into(),
             created_at: value.created_at,

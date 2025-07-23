@@ -16,7 +16,6 @@ pub trait ExpensesRepositoryTrait {
     async fn create_many(
         &self,
         create_dto: Vec<CreateExpenseDbDto>,
-        customer_id: &str,
     ) -> Result<Vec<ExpenseFromDb>, HttpError>;
     async fn update_one(
         &self,

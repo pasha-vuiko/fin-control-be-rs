@@ -1,8 +1,13 @@
+use sea_orm::ActiveValue;
+use sea_orm::prelude::Decimal;
 use serde::{Deserialize, Serialize};
 
 use crate::api::expenses::dto::update_expense_dto::UpdateExpenseDto;
 use crate::api::expenses::types::expense_category::ExpenseCategory;
-use prisma_client::expense;
+
+use crate::shared::modules::db::entities::expense::ActiveModel as ExpenseActiveModel;
+use crate::shared::modules::db::entities::sea_orm_active_enums;
+use crate::shared::modules::db::utils::optional_to_active_value;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct UpdateExpenseDbDto {
@@ -21,22 +26,24 @@ impl From<UpdateExpenseDto> for UpdateExpenseDbDto {
     }
 }
 
-impl From<UpdateExpenseDbDto> for Vec<expense::SetParam> {
+impl From<UpdateExpenseDbDto> for ExpenseActiveModel {
     fn from(value: UpdateExpenseDbDto) -> Self {
-        let mut set_params = vec![];
-
-        if let Some(amount) = value.amount {
-            set_params.push(expense::amount::set(amount));
+        Self {
+            id: ActiveValue::NotSet,
+            customer_id: ActiveValue::NotSet,
+            category: optional_to_active_value(
+                value
+                    .category
+                    .map(sea_orm_active_enums::ExpenseCategory::from),
+            ),
+            amount: optional_to_active_value(
+                value
+                    .amount
+                    .map(|amount| Decimal::from_f64_retain(amount).unwrap_or_default()),
+            ),
+            date: optional_to_active_value(value.date.into()),
+            created_at: ActiveValue::NotSet,
+            updated_at: ActiveValue::NotSet,
         }
-
-        if let Some(date) = value.date {
-            set_params.push(expense::date::set(date));
-        }
-
-        if let Some(category) = value.category {
-            set_params.push(expense::category::set(category.into()));
-        }
-
-        set_params
     }
 }

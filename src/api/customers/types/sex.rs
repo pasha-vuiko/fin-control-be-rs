@@ -1,7 +1,7 @@
+use crate::shared::modules::db::entities::sea_orm_active_enums;
 use schemars::JsonSchema;
+use sea_orm::{ActiveValue, IntoActiveValue};
 use serde::{Deserialize, Serialize};
-
-use prisma_client as prisma;
 
 #[derive(Serialize, Deserialize, Debug, JsonSchema)]
 pub enum Sex {
@@ -11,20 +11,26 @@ pub enum Sex {
     Female,
 }
 
-impl From<prisma::Sex> for Sex {
-    fn from(value: prisma::Sex) -> Self {
+impl From<sea_orm_active_enums::Sex> for Sex {
+    fn from(value: sea_orm_active_enums::Sex) -> Self {
         match value {
-            prisma::Sex::Male => Sex::Male,
-            prisma::Sex::Female => Sex::Female,
+            sea_orm_active_enums::Sex::Male => Sex::Male,
+            sea_orm_active_enums::Sex::Female => Sex::Female,
         }
     }
 }
 
-impl From<Sex> for prisma::Sex {
+impl From<Sex> for sea_orm_active_enums::Sex {
     fn from(value: Sex) -> Self {
         match value {
-            Sex::Male => prisma::Sex::Male,
-            Sex::Female => prisma::Sex::Female,
+            Sex::Male => sea_orm_active_enums::Sex::Male,
+            Sex::Female => sea_orm_active_enums::Sex::Female,
         }
+    }
+}
+
+impl IntoActiveValue<sea_orm_active_enums::Sex> for Sex {
+    fn into_active_value(self) -> ActiveValue<sea_orm_active_enums::Sex> {
+        ActiveValue::Set(self.into())
     }
 }

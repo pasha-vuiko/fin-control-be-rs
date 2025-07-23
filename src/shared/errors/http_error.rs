@@ -82,9 +82,9 @@ impl From<CacheError> for HttpError {
     }
 }
 
-impl From<prisma_client_rust::QueryError> for HttpError {
-    fn from(prisma_query_error: prisma_client_rust::QueryError) -> Self {
-        Self::Internal(format!("Prisma QueryError: {prisma_query_error}"))
+impl From<sea_orm::DbErr> for HttpError {
+    fn from(sea_orm_query_error: sea_orm::DbErr) -> Self {
+        Self::Internal(format!("SeaORM QueryError: {sea_orm_query_error}"))
     }
 }
 

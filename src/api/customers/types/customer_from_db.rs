@@ -2,7 +2,7 @@ use chrono::{DateTime, FixedOffset};
 use serde::{Deserialize, Serialize};
 
 use crate::api::customers::types::sex::Sex;
-use prisma_client::customer;
+use crate::shared::modules::db::entities::customer;
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct CustomerFromDb {
@@ -16,8 +16,8 @@ pub struct CustomerFromDb {
     pub sex: Sex,
 }
 
-impl From<customer::Data> for CustomerFromDb {
-    fn from(value: customer::Data) -> Self {
+impl From<customer::Model> for CustomerFromDb {
+    fn from(value: customer::Model) -> Self {
         Self {
             id: value.id,
             user_id: value.user_id,

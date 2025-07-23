@@ -1,19 +1,18 @@
-use aide::axum::routing::{delete, get, patch, post};
-use aide::axum::ApiRouter;
-use std::sync::Arc;
-
 use crate::api::customers::customers_repository::CustomerRepository;
 use crate::api::customers::customers_service::CustomersService;
 use crate::api::expenses::expenses_repository::ExpensesRepository;
 use crate::api::expenses::expenses_service::ExpensesService;
 use crate::api::expenses::types::api_state::ExpensesApiState;
+use aide::axum::ApiRouter;
+use aide::axum::routing::{delete, get, patch, post};
+use sea_orm::DatabaseConnection;
+use std::sync::Arc;
 
 use crate::shared::modules::auth::enums::roles::Roles;
 use crate::shared::modules::auth::middlewares::role_based_bearer_auth::AuthLayer;
 use crate::shared::modules::auth::services::auth0::Auth0Service;
 use crate::shared::modules::cache::middlewares::json_cache::JsonCacheLayer;
 use crate::shared::modules::redis::redis_service::RedisService;
-use prisma_client::PrismaClient;
 
 mod dto;
 mod entities;
@@ -25,14 +24,14 @@ mod expenses_repository;
 mod expenses_service;
 
 pub fn get_router(
-    prisma_client: Arc<PrismaClient>,
+    sea_orm_client: Arc<DatabaseConnection>,
     redis_service: Arc<RedisService>,
     auth_service: Arc<Auth0Service>,
 ) -> ApiRouter {
-    let customers_repository = Arc::new(CustomerRepository::new(prisma_client.clone()));
+    let customers_repository = Arc::new(CustomerRepository::new(sea_orm_client.clone()));
     let customers_service = Arc::new(CustomersService::new(customers_repository));
 
-    let expenses_repository = Arc::new(ExpensesRepository::new(prisma_client));
+    let expenses_repository = Arc::new(ExpensesRepository::new(sea_orm_client));
     let expenses_service = Arc::new(ExpensesService::new(expenses_repository, customers_service));
 
     let api_state = ExpensesApiState { expenses_service };

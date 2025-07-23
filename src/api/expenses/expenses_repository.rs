@@ -1,33 +1,32 @@
-use async_trait::async_trait;
-use prisma_client_rust::Direction;
-use std::sync::Arc;
-
 use crate::api::expenses::dto::create_expense_db_dto::CreateExpenseDbDto;
 use crate::api::expenses::dto::find_expenses_dto::FindExpensesDto;
 use crate::api::expenses::dto::update_expense_db_dto::UpdateExpenseDbDto;
 use crate::api::expenses::traits::expenses_repository::ExpensesRepositoryTrait;
 use crate::api::expenses::types::expense_from_db::ExpenseFromDb;
 use crate::shared::errors::http_error::HttpError;
-use prisma_client::{expense, PrismaClient};
+use async_trait::async_trait;
+use sea_orm::{ColumnTrait, DatabaseConnection, EntityTrait, IntoActiveModel, QueryFilter};
+use std::sync::Arc;
+
+use crate::shared::modules::db::entities::expense;
+use crate::shared::modules::db::entities::prelude::Expense;
+use crate::shared::modules::db::entities::expense::ActiveModel as ExpenseActiveModel;
 
 pub struct ExpensesRepository {
-    prisma_client: Arc<PrismaClient>,
+    sea_orm_client: Arc<DatabaseConnection>,
 }
 
 impl ExpensesRepository {
-    pub fn new(prisma_client: Arc<PrismaClient>) -> Self {
-        Self { prisma_client }
+    pub fn new(sea_orm_client: Arc<DatabaseConnection>) -> Self {
+        Self { sea_orm_client }
     }
 }
 
 #[async_trait]
 impl ExpensesRepositoryTrait for ExpensesRepository {
     async fn find_one(&self, id: &str) -> Result<ExpenseFromDb, HttpError> {
-        let found_expense = self
-            .prisma_client
-            .expense()
-            .find_unique(expense::id::equals(id.into()))
-            .exec()
+        let found_expense = Expense::find_by_id(id)
+            .one(self.sea_orm_client.as_ref())
             .await?
             .ok_or_else(|| HttpError::NotFound(format!("Expense with id {id} not found")))?
             .into();
@@ -37,59 +36,41 @@ impl ExpensesRepositoryTrait for ExpensesRepository {
 
     async fn find_many(
         &self,
-        _filter: Option<FindExpensesDto>,
+        filter: Option<FindExpensesDto>,
     ) -> Result<Vec<ExpenseFromDb>, HttpError> {
-        let found_expenses = self
-            .prisma_client
-            .expense()
-            .find_many(vec![])
-            .exec()
-            .await?
-            .into_iter()
-            .map(Into::into)
-            .collect();
+        let found_expenses = if let Some(filter) = filter {
+            Expense::find()
+                .filter(expense::Column::CustomerId.eq(filter.customer_id))
+                .all(self.sea_orm_client.as_ref())
+                .await?
+                .into_iter()
+                .map(Into::into)
+                .collect()
+        } else {
+            Expense::find()
+                .all(self.sea_orm_client.as_ref())
+                .await?
+                .into_iter()
+                .map(Into::into)
+                .collect()
+        };
 
         Ok(found_expenses)
     }
 
     async fn create_many(
         &self,
-        create_dto: Vec<CreateExpenseDbDto>,
-        customer_id: &str,
+        create_dtos: Vec<CreateExpenseDbDto>,
     ) -> Result<Vec<ExpenseFromDb>, HttpError> {
-        let prisma_create_dto = create_dto
-            .into_iter()
-            .map(|dto| {
-                expense::create_unchecked(
-                    dto.customer_id,
-                    dto.amount,
-                    dto.date,
-                    dto.category.into(),
-                    vec![],
-                )
-            })
-            .collect();
+        let created_expenses = Expense::insert_many(
+            create_dtos
+                .into_iter()
+                .map(|create_dto| create_dto.into_active_model()),
+        )
+        .exec_with_returning_many(self.sea_orm_client.as_ref())
+        .await?;
 
-        let created_expenses_amount = self
-            .prisma_client
-            .expense()
-            .create_many(prisma_create_dto)
-            .exec()
-            .await?;
-
-        let created_expenses = self
-            .prisma_client
-            .expense()
-            .find_many(vec![expense::customer_id::equals(customer_id.into())])
-            .take(created_expenses_amount)
-            .order_by(expense::created_at::order(Direction::Desc))
-            .exec()
-            .await?
-            .into_iter()
-            .map(ExpenseFromDb::from)
-            .collect();
-
-        Ok(created_expenses)
+        Ok(created_expenses.into_iter().map(Into::into).collect())
     }
 
     async fn update_one(
@@ -97,24 +78,23 @@ impl ExpensesRepositoryTrait for ExpensesRepository {
         id: &str,
         update_dto: UpdateExpenseDbDto,
     ) -> Result<ExpenseFromDb, HttpError> {
-        let updated_expense = self
-            .prisma_client
-            .expense()
-            .update(expense::id::equals(id.into()), update_dto.into())
-            .exec()
-            .await?
-            .into();
+        let updated_expense = Expense::update(ExpenseActiveModel::from(update_dto))
+            .filter(expense::Column::Id.eq(id))
+            .exec(self.sea_orm_client.as_ref())
+            .await?;
 
-        Ok(updated_expense)
+        Ok(updated_expense.into())
     }
 
     async fn delete_one(&self, id: &str) -> Result<ExpenseFromDb, HttpError> {
-        let deleted_expense = self
-            .prisma_client
-            .expense()
-            .delete(expense::id::equals(id.into()))
-            .exec()
+        let deleted_expense = Expense::delete_by_id(id)
+            .exec_with_returning(self.sea_orm_client.as_ref())
             .await?
+            .first()
+            .ok_or(HttpError::NotFound(format!(
+                "Expense with id {id} not found"
+            )))?
+            .clone()
             .into();
 
         Ok(deleted_expense)

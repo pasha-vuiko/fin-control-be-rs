@@ -1,7 +1,7 @@
+use crate::shared::modules::db::entities::sea_orm_active_enums;
 use schemars::JsonSchema;
+use sea_orm::{ActiveValue, IntoActiveValue};
 use serde::{Deserialize, Serialize};
-
-use prisma_client as prisma;
 
 #[derive(Serialize, Deserialize, Debug, JsonSchema)]
 pub enum ExpenseCategory {
@@ -47,34 +47,34 @@ pub enum ExpenseCategory {
     Medicine,
 }
 
-impl From<prisma::ExpenseCategory> for ExpenseCategory {
-    fn from(value: prisma::ExpenseCategory) -> Self {
+impl From<sea_orm_active_enums::ExpenseCategory> for ExpenseCategory {
+    fn from(value: sea_orm_active_enums::ExpenseCategory) -> Self {
         match value {
-            prisma::ExpenseCategory::Food => Self::Food,
-            prisma::ExpenseCategory::Clothes => Self::Clothes,
-            prisma::ExpenseCategory::Subscriptions => Self::Subscriptions,
-            prisma::ExpenseCategory::Other => Self::Other,
-            prisma::ExpenseCategory::UtilityPayments => Self::UtilityPayments,
-            prisma::ExpenseCategory::Animals => Self::Animals,
-            prisma::ExpenseCategory::PlacesToEat => Self::PlacesToEat,
-            prisma::ExpenseCategory::Education => Self::Education,
-            prisma::ExpenseCategory::Books => Self::Books,
-            prisma::ExpenseCategory::Taxi => Self::Taxi,
-            prisma::ExpenseCategory::Gifts => Self::Gifts,
-            prisma::ExpenseCategory::Donations => Self::Donations,
-            prisma::ExpenseCategory::MobileServices => Self::MobileServices,
-            prisma::ExpenseCategory::Sports => Self::Sports,
-            prisma::ExpenseCategory::Enterainment => Self::Entertainment,
-            prisma::ExpenseCategory::BeautyAndCare => Self::BeautyAndCare,
-            prisma::ExpenseCategory::Household => Self::Household,
-            prisma::ExpenseCategory::PublicTransport => Self::PublicTransport,
-            prisma::ExpenseCategory::Travel => Self::Travel,
-            prisma::ExpenseCategory::Medicine => Self::Medicine,
+            sea_orm_active_enums::ExpenseCategory::Food => Self::Food,
+            sea_orm_active_enums::ExpenseCategory::Clothes => Self::Clothes,
+            sea_orm_active_enums::ExpenseCategory::Subscriptions => Self::Subscriptions,
+            sea_orm_active_enums::ExpenseCategory::Other => Self::Other,
+            sea_orm_active_enums::ExpenseCategory::UtilityPayments => Self::UtilityPayments,
+            sea_orm_active_enums::ExpenseCategory::Animals => Self::Animals,
+            sea_orm_active_enums::ExpenseCategory::PlacesToEat => Self::PlacesToEat,
+            sea_orm_active_enums::ExpenseCategory::Education => Self::Education,
+            sea_orm_active_enums::ExpenseCategory::Books => Self::Books,
+            sea_orm_active_enums::ExpenseCategory::Taxi => Self::Taxi,
+            sea_orm_active_enums::ExpenseCategory::Gifts => Self::Gifts,
+            sea_orm_active_enums::ExpenseCategory::Donations => Self::Donations,
+            sea_orm_active_enums::ExpenseCategory::MobileServices => Self::MobileServices,
+            sea_orm_active_enums::ExpenseCategory::Sports => Self::Sports,
+            sea_orm_active_enums::ExpenseCategory::Entertainment => Self::Entertainment,
+            sea_orm_active_enums::ExpenseCategory::BeautyAndCare => Self::BeautyAndCare,
+            sea_orm_active_enums::ExpenseCategory::Household => Self::Household,
+            sea_orm_active_enums::ExpenseCategory::PublicTransport => Self::PublicTransport,
+            sea_orm_active_enums::ExpenseCategory::Travel => Self::Travel,
+            sea_orm_active_enums::ExpenseCategory::Medicine => Self::Medicine,
         }
     }
 }
 
-impl From<ExpenseCategory> for prisma::ExpenseCategory {
+impl From<ExpenseCategory> for sea_orm_active_enums::ExpenseCategory {
     fn from(value: ExpenseCategory) -> Self {
         match value {
             ExpenseCategory::Food => Self::Food,
@@ -91,12 +91,18 @@ impl From<ExpenseCategory> for prisma::ExpenseCategory {
             ExpenseCategory::Donations => Self::Donations,
             ExpenseCategory::MobileServices => Self::MobileServices,
             ExpenseCategory::Sports => Self::Sports,
-            ExpenseCategory::Entertainment => Self::Enterainment,
+            ExpenseCategory::Entertainment => Self::Entertainment,
             ExpenseCategory::BeautyAndCare => Self::BeautyAndCare,
             ExpenseCategory::Household => Self::Household,
             ExpenseCategory::PublicTransport => Self::PublicTransport,
             ExpenseCategory::Travel => Self::Travel,
             ExpenseCategory::Medicine => Self::Medicine,
         }
+    }
+}
+
+impl IntoActiveValue<sea_orm_active_enums::ExpenseCategory> for ExpenseCategory {
+    fn into_active_value(self) -> ActiveValue<sea_orm_active_enums::ExpenseCategory> {
+        ActiveValue::Set(self.into())
     }
 }

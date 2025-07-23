@@ -1,8 +1,4 @@
 use crate::api::customers::customers_repository::CustomerRepository;
-use aide::axum::routing::{delete, get, patch, post};
-use aide::axum::ApiRouter;
-use std::sync::Arc;
-
 use crate::api::customers::{
     customers_service::CustomersService, types::api_state::CustomersApiState,
 };
@@ -11,7 +7,10 @@ use crate::shared::modules::auth::middlewares::role_based_bearer_auth::AuthLayer
 use crate::shared::modules::auth::services::auth0::Auth0Service;
 use crate::shared::modules::cache::middlewares::json_cache::JsonCacheLayer;
 use crate::shared::modules::redis::redis_service::RedisService;
-use prisma_client::PrismaClient;
+use aide::axum::ApiRouter;
+use aide::axum::routing::{delete, get, patch, post};
+use sea_orm::DatabaseConnection;
+use std::sync::Arc;
 
 mod customers_handlers;
 pub mod customers_repository;
@@ -22,11 +21,11 @@ mod traits;
 mod types;
 
 pub fn get_router(
-    prisma_client: Arc<PrismaClient>,
+    sea_orm_client: Arc<DatabaseConnection>,
     redis_service: Arc<RedisService>,
     auth_service: Arc<Auth0Service>,
 ) -> ApiRouter {
-    let customers_repository = Arc::new(CustomerRepository::new(prisma_client));
+    let customers_repository = Arc::new(CustomerRepository::new(sea_orm_client));
     let customers_service = Arc::new(CustomersService::new(customers_repository));
     let api_state = CustomersApiState { customers_service };
 

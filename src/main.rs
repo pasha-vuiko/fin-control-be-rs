@@ -1,6 +1,7 @@
 use aide::axum::ApiRouter;
 use axum::Extension;
 use std::{env, sync::Arc};
+use sea_orm::Database;
 
 mod api;
 use crate::shared::config::get_config;
@@ -21,10 +22,10 @@ async fn main() {
 
     let mut open_api = get_open_api();
 
-    // Prisma client
-    let prisma_client = prisma_client::new_client()
+    // SeaORM client
+    let sea_orm = Database::connect(&config.database_url)
         .await
-        .expect("Failed to generate prisma client");
+        .expect("Failed to connect to DB");
     // Redis Connection manager
     let redis_service = RedisServiceBuilder::new(&config.redis_host, config.redis_port)
         .with_default_ttl(config.redis_ttl)
@@ -38,7 +39,7 @@ async fn main() {
 
     // TODO Add pagination for APIs
     let api_router = api::get_router(
-        Arc::new(prisma_client),
+        Arc::new(sea_orm),
         Arc::new(redis_service),
         Arc::new(auth_service),
     )
