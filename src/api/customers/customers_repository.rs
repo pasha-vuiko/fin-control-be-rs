@@ -28,7 +28,9 @@ impl CustomersRepositoryTrait for CustomerRepository {
         let customer_from_db = Customer::find_by_id(id)
             .one(self.sea_orm_client.as_ref())
             .await?
-            .ok_or_else(|| HttpError::NotFound(format!("Customer with id '{id}' was not found")))?;
+            .ok_or(HttpError::NotFound(format!(
+                "Customer with id '{id}' was not found"
+            )))?;
 
         Ok(customer_from_db.into())
     }
@@ -38,9 +40,9 @@ impl CustomersRepositoryTrait for CustomerRepository {
             .filter(customer::Column::UserId.eq(user_id))
             .one(self.sea_orm_client.as_ref())
             .await?
-            .ok_or_else(|| {
-                HttpError::NotFound(format!("Customer with user_id '{user_id}' was not found"))
-            })?;
+            .ok_or(HttpError::NotFound(format!(
+                "Customer with user_id '{user_id}' was not found"
+            )))?;
 
         Ok(customer_from_db.into())
     }

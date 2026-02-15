@@ -1,7 +1,8 @@
 use aide::axum::ApiRouter;
 use axum::Extension;
+use sea_orm::{ConnectOptions, Database};
 use std::{env, sync::Arc};
-use sea_orm::Database;
+use tracing::log;
 
 mod api;
 use crate::shared::config::get_config;
@@ -23,7 +24,9 @@ async fn main() {
     let mut open_api = get_open_api();
 
     // SeaORM client
-    let sea_orm = Database::connect(&config.database_url)
+    let mut sea_orm_opts = ConnectOptions::new(&config.database_url);
+    sea_orm_opts.sqlx_logging_level(log::Level::Debug.to_level_filter());
+    let sea_orm = Database::connect(sea_orm_opts)
         .await
         .expect("Failed to connect to DB");
     // Redis Connection manager

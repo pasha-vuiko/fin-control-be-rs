@@ -8,14 +8,14 @@ edition = "2024"
 resolver = "2"
 
 [dependencies]
-axum = { version = "0.8.4", features = ["macros"] }
-tokio = { version = "1.46.1", features = ["full"] }
+axum = { version = "0.8.6", features = ["macros"] }
+tokio = { version = "1.47.1", features = ["full"] }
 tower = "0.5.2"
 tower-http = { version = "0.6.6", features = ["trace", "auth", "request-id"] }
 
 # Serialization/Deserialization
-serde_json = "1.0.141"
-serde = { version = "1.0.219", features = ["derive", "rc"] }
+serde_json = "1.0.145"
+serde = { version = "1.0.228", features = ["derive", "rc"] }
 
 # Config
 dotenv = "0.15.0"
@@ -28,30 +28,30 @@ validator = { version = "0.20.0", features = ["derive"] }
 alcoholic_jwt = "4091.0.0"
 
 # Database ORM
-sea-orm = { version = "1.1.14", features = ["macros", "sqlx-postgres", "chrono", "runtime-tokio"] }
+sea-orm = { version = "1.1.17", features = ["macros", "sqlx-postgres", "chrono", "runtime-tokio"] }
 
 # Requests
-reqwest = { version = "0.12.22", features = ["json"] }
+reqwest = { version = "0.12.23", features = ["json"] }
 
 # Redis
-redis = { version = "1.0.0-alpha", features = ["tokio-comp", "connection-manager"] }
+redis = { version = "1.0.0-rc.1", features = ["tokio-comp", "connection-manager"] }
 
 # Logger
-tracing-subscriber = { version = "0.3.19", features = ["env-filter", "json"] }
+tracing-subscriber = { version = "0.3.20", features = ["env-filter", "json"] }
 tracing = "0.1.41"
 
 # Error handling
 onlyerror = "0.1.5"
 
 # Util crates
-chrono = "0.4.41" # Working with dates
-async-trait = "0.1.88"
+chrono = "0.4.42" # Working with dates
+async-trait = "0.1.89"
 base64 = "0.22.1"
 futures-util = "0.3.31"
-uuid = "1.17.0"
+uuid = "1.18.1"
 
 # Open API
-aide = { version = "0.15.0", features = [
+aide = { version = "0.15.1", features = [
     "axum",
     "redoc",
     "axum-extra",

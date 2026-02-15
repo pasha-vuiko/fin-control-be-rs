@@ -28,7 +28,7 @@ impl ExpensesRepositoryTrait for ExpensesRepository {
         let found_expense = Expense::find_by_id(id)
             .one(self.sea_orm_client.as_ref())
             .await?
-            .ok_or_else(|| HttpError::NotFound(format!("Expense with id {id} not found")))?
+            .ok_or(HttpError::NotFound(format!("Expense with id {id} not found")))?
             .into();
 
         Ok(found_expense)

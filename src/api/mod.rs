@@ -15,18 +15,24 @@ pub async fn get_router(
     redis_service: Arc<RedisService>,
     auth_service: Arc<Auth0Service>,
 ) -> ApiRouter {
+    let api_v1_router = ApiRouter::new().nest(
+        "/v1",
+        ApiRouter::new()
+            .merge(customers::get_router(
+                sea_orm_client.clone(),
+                redis_service.clone(),
+                auth_service.clone(),
+            ))
+            .merge(expenses::get_router(
+                sea_orm_client,
+                redis_service,
+                auth_service,
+            )),
+    );
+
     ApiRouter::new()
         .api_route("/", get(root_handler))
-        .merge(customers::get_router(
-            sea_orm_client.clone(),
-            redis_service.clone(),
-            auth_service.clone(),
-        ))
-        .merge(expenses::get_router(
-            sea_orm_client,
-            redis_service,
-            auth_service,
-        ))
+        .merge(api_v1_router)
 }
 
 async fn root_handler() -> impl IntoApiResponse {
